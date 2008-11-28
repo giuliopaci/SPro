@@ -28,7 +28,7 @@
 ## CVS log:
 ##
 ##   $Author: ggravier $
-##   $Date: 2007-01-30 22:59:36 +0100(mar, 30 gen 2007) $
+##   $Date: 2007-01-30 22:59:36 +0100 (mar, 30 gen 2007) $
 ##   $Revision: 137 $
 ##
 
@@ -65,6 +65,7 @@ AC_TYPE_SIZE_T
 dnl defined sizeof standard types
 AC_CHECK_SIZEOF(char)
 AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 
 dnl Checks for header files
