@@ -28,7 +28,7 @@
  * CVS log:
  *
  * $Author: guig $
- * $Date: 2007-04-19 17:46:00 +0200(gio, 19 apr 2007) $
+ * $Date: 2007-04-19 17:46:00 +0200 (gio, 19 apr 2007) $
  * $Revision: 140 $
  */
 
@@ -523,7 +523,7 @@ int read_args(int argc, char **argv)
     {"freq-min", required_argument, NULL, 'i'},
     {"freq-max", required_argument, NULL, 'u'},
     {"fft-length", required_argument, NULL, 'b'},
-    {"num-cep", required_argument, NULL, 'p'},
+    {"num-ceps", required_argument, NULL, 'p'},
     {"lifter", required_argument, NULL, 'r'},
     {"energy", no_argument, NULL, 'e'},
     {"scale-energy", required_argument, NULL, 's'},
