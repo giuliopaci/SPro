@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2007-01-30 22:59:36 +0100(mar, 30 gen 2007) $
- * $Revision: 137 $
+ * $Author$
+ * $Date$
+ * $Revision$
  *
  */
 
@@ -327,7 +327,7 @@ spf_t *get_spf_buf_vec(spfbuf_t *buf, unsigned long t)
  * Open input feature stream. Return a pointer to the stream or NULL
  * in case of error.
  */
-spfstream_t *spf_input_stream_open(const char *fn, long flag, size_t nbytes)
+spfstream_t *spf_input_stream_open(const char *fn, int32_t flag, size_t nbytes)
 {
   spfstream_t *s;
   unsigned short dim, idx[9];
@@ -371,14 +371,14 @@ spfstream_t *spf_input_stream_open(const char *fn, long flag, size_t nbytes)
     return(NULL);
   }
   
-  if (fread(&(s->idim), SIZEOF_SHORT, 1, s->f) != 1 || fread(&(s->iflag), SIZEOF_LONG, 1, s->f) != 1 || fread(&(s->Fs), sizeof(float), 1, s->f) != 1) {
+  if (fread(&(s->idim), SIZEOF_SHORT, 1, s->f) != 1 || fread(&(s->iflag), sizeof(int32_t), 1, s->f) != 1 || fread(&(s->Fs), sizeof(float), 1, s->f) != 1) {
     fprintf(stderr, "spf_header_read(): cannot read fixed header\n");
     spf_stream_close(s);
     return(NULL);
   }
 #ifdef WORDS_BIGENDIAN
   sp_swap(&(s->idim), SIZEOF_SHORT);
-  sp_swap(&(s->iflag), SIZEOF_LONG);
+  sp_swap(&(s->iflag), sizeof(int32_t));
   sp_swap(&(s->Fs), sizeof(float));
 #endif
 
@@ -417,12 +417,12 @@ spfstream_t *spf_input_stream_open(const char *fn, long flag, size_t nbytes)
  * Open output feature stream. Return a pointer to the stream or NULL
  * in case of error.
  */
-spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, long iflag, 
-				    long cflag, float frate, const struct spf_header_field *vh, size_t nbytes)
+spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, int32_t iflag, 
+				    int32_t cflag, float frate, const struct spf_header_field *vh, size_t nbytes)
 {
   spfstream_t *s;
   unsigned short dim, idx[9];
-  long flag;
+  int32_t flag;
   float rate;
 
   if ((s = (spfstream_t *)malloc(sizeof(spfstream_t))) == NULL) {
@@ -503,12 +503,12 @@ spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, long if
   
 #ifdef WORDS_BIGENDIAN
   sp_swap(&dim, SIZEOF_SHORT);
-  sp_swap(&flag, SIZEOF_LONG);
+  sp_swap(&flag, sizeof(flag));
   sp_swap(&rate, sizeof(float));
 #endif
   
   if (fwrite(&dim, SIZEOF_SHORT, 1, s->f) != 1 || 
-      fwrite(&flag, SIZEOF_LONG, 1, s->f) != 1 || 
+      fwrite(&flag, sizeof(flag), 1, s->f) != 1 || 
       fwrite(&rate, sizeof(float), 1, s->f) != 1) {
     fprintf(stderr, "spf_output_stream_open() -- cannot write fixed header to %s\n", (fn) ? (fn) : "stdout"); 
     return(NULL);
@@ -780,9 +780,9 @@ spf_t *get_next_spf_frame(spfstream_t *s)
  * Convert a data description string to binary flag, ignoring unkown
  * convertion letters.
  */
-long sp_str_to_flag(const char *str)
+int32_t sp_str_to_flag(const char *str)
 {
-  long flag = 0;
+  int32_t flag = 0;
   const char *p = str;
 
   if (str)
@@ -808,7 +808,7 @@ long sp_str_to_flag(const char *str)
 /*
  * Transform flag to stream description string.
  */
-char *sp_flag_to_str(long flag, char str[7])
+char *sp_flag_to_str(int32_t flag, char str[7])
 {
   char *p = str;
 

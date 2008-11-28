@@ -28,7 +28,7 @@
  * CVS log:
  *
  * $Author: ggravier $
- * $Date: 2007-01-30 22:59:36 +0100(mar, 30 gen 2007) $
+ * $Date: 2007-01-30 22:59:36 +0100 (mar, 30 gen 2007) $
  * $Revision: 137 $
  *
  */
@@ -51,7 +51,7 @@
 /* ----- FFT and DCT global variables ----- */
 /* ---------------------------------------- */
 static float *w1c = NULL, *w3c = NULL;
-static long *jx0 = NULL;
+static int *jx0 = NULL;
 static unsigned long _fftn = 0;
 static int _fftm = 0;
 static float *_fftbuf = NULL;
@@ -105,7 +105,7 @@ int fft_init(unsigned long npts)
       return(SPRO_ALLOC_ERR);
     }
     
-    if ((jx0 = (long *)realloc(jx0, npts * sizeof(long) / 3)) == NULL) {
+    if ((jx0 = (int *)realloc(jx0, npts * sizeof(int) / 3)) == NULL) {
       fprintf(stderr, "[SPro error %d] FFTInit(): cannot allocate FFT kernel", SPRO_ALLOC_ERR);
       free(_fftbuf); free(w1c); free(w3c);
       return(SPRO_ALLOC_ERR);

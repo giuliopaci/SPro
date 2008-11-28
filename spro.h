@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: guig $
- * $Date: 2008-03-10 11:32:00 +0100(lun, 10 mar 2008) $
- * $Revision: 142 $
+ * $Author$
+ * $Date$
+ * $Revision$
  *
  */
 
@@ -173,11 +173,11 @@ typedef struct {
   float Fs;                     /* frame rate       
                           */
   unsigned short idim;          /* input dimension                            */
-  long iflag;                   /* input stream description                   */
+  int32_t iflag;                   /* input stream description                   */
   unsigned short odim;          /* output dimension                           */
-  long oflag;                   /* output stream description                  */
+  int32_t oflag;                   /* output stream description                  */
 
-  long cflag;                   /* additionnal stream description             */
+  int32_t cflag;                   /* additionnal stream description             */
   unsigned long winlen;         /* global processing window length            */
   float escale;                 /* energy scaling factor                      */
 
@@ -420,7 +420,7 @@ extern void sp_swap(void *, size_t);
 /* open feature stream in read mode  */
 spfstream_t *spf_input_stream_open(
   const char *,                 /* stream name                                */
-  long,                         /* feature descriptors to add                 */
+  int32_t,                         /* feature descriptors to add                 */
   size_t                        /* I/O buffer maximum size (in bytes)         */
 );
 
@@ -428,8 +428,8 @@ spfstream_t *spf_input_stream_open(
 spfstream_t *spf_output_stream_open(
   const char *,                 /* stream name                                */
   unsigned short,               /* feature dimension                          */
-  long,                         /* input feature description flag             */
-  long,                         /* feature descriptors to add                 */
+  int32_t,                         /* input feature description flag             */
+  int32_t,                         /* feature descriptors to add                 */
   float,                        /* frame sample rate in Hz                    */
   const struct spf_header_field *, /* NULL terminated name/value array        */
   size_t                        /* I/O buffer maximum size (in bytes)         */
@@ -479,13 +479,13 @@ spf_t *get_next_spf_frame(
 );
 
 /* convert a feature stream description string to binary flag  */
-long sp_str_to_flag(
+int32_t sp_str_to_flag(
   const char *                  /* data description string                    */
 );
 
 /* convert a feature stream description flag to string  */
 char *sp_flag_to_str(
-  long,                         /* feature stream description                 */
+  int32_t,                         /* feature stream description                 */
   char [7]                      /* output string                              */
 );
 
