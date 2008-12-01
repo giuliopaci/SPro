@@ -61,7 +61,7 @@
 extern "C" {
 # endif
 
-# include <system.h>
+# include "spro/system.h"
 
      /* ----------------------- */
      /* ----- error codes ----- */

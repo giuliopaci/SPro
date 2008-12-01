@@ -75,7 +75,7 @@
 #ifdef SPHERE
 # include <sp/sphere.h>
 #endif
-#include <sptables.h>  /* -> for Alaw and ulaw conversions */
+#include "spro/sptables.h"  /* -> for Alaw and ulaw conversions */
 
 /* --------------------------------------------- */
 /* ----- spsig_t *sig_alloc(unsigned long) ----- */
