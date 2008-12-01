@@ -10,5 +10,5 @@
 
 aclocal
 autoheader
-automake -a
+automake -a --force-missing
 autoconf
