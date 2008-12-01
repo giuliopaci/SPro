@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<!-- lifted from troff+man by doclifter -->
+<refentry>
+<!--  $Header: /aolnet/dev/src/CVS/sgml/docbook\-to\-man/cmd/docbook\-to\-man.sh,v 1.1.1.1 1998/11/13 21:31:59 db3l Exp $ -->
+
+<!-- 	transcript compatibility for postscript use. -->
+
+<!-- 	synopsis:  .P! file.ps -->
+
+<!-- P! listing suppressed (not used) -->
+<!-- fP listing suppressed (not used) -->
+<!-- '\" t  -->
+<!-- .ta 8n 16n 24n 32n 40n 48n 56n 64n 72n -->
+<refmeta>
+<refentrytitle>slpc</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+<refnamediv id='name'>
+<refname>slpc</refname>
+<refpurpose>configures users on the system</refpurpose>
+</refnamediv>
+<!-- body begins here -->
+<refsynopsisdiv id='synopsis'>
+<cmdsynopsis>
+  <command>kuser</command>    <arg choice='opt'>--help</arg>
+    <arg choice='opt'>--help-kde</arg>
+    <arg choice='opt'>--help-qt</arg>
+    <arg choice='opt'><arg choice='plain'>--version </arg><arg choice='plain'>-v </arg></arg>
+    <arg choice='opt'>--license</arg>
+    <arg choice='opt'>--author</arg>
+    <arg choice='opt'>--caption <replaceable>caption</replaceable></arg>
+    <arg choice='opt'>--icon <replaceable>icon</replaceable></arg>
+    <arg choice='opt'>--miniicon <replaceable>icon</replaceable></arg>
+    <arg choice='opt'>--dcopserver <replaceable>server</replaceable></arg>
+    <arg choice='opt'>--nocrashhandler</arg>
+    <arg choice='opt'>--waitforwm</arg>
+    <arg choice='opt'>--style <replaceable>style</replaceable></arg>
+    <arg choice='opt'>--geometry <replaceable>geometry</replaceable></arg>
+    <arg choice='opt'>--display <replaceable>display</replaceable></arg>
+    <arg choice='opt'>--session <replaceable>sessionid</replaceable></arg>
+    <arg choice='opt'>--cmap</arg>
+    <arg choice='opt'>--ncols <replaceable>columns</replaceable></arg>
+    <arg choice='opt'>--nograb</arg>
+    <arg choice='opt'>--dograb</arg>
+    <arg choice='opt'>--sync</arg>
+    <arg choice='opt'><arg choice='plain'>--font </arg><arg choice='plain'>--fn <replaceable>fontname</replaceable></arg></arg>
+    <arg choice='opt'><arg choice='plain'>--background </arg><arg choice='plain'>--bg <replaceable>colour</replaceable></arg></arg>
+    <arg choice='opt'><arg choice='plain'>--button </arg><arg choice='plain'>--btn <replaceable>colour</replaceable></arg></arg>
+    <arg choice='opt'>--name <replaceable>name</replaceable></arg>
+    <arg choice='opt'>--title <replaceable>title</replaceable></arg>
+    <arg choice='opt'>--visual <replaceable>TrueColor</replaceable></arg>
+    <arg choice='opt'>--inputstyle <replaceable>style</replaceable></arg>
+    <arg choice='opt'>--im <replaceable>server</replaceable></arg>
+    <arg choice='opt'>--noxim</arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+
+<refsect1 id='description'><title>Description</title>
+<para>This manual page documents briefly the 
+<command>kuser</command> command.</para> 
+
+<para><command>kuser</command> is an application to configure users on  
+the system.</para> 
+</refsect1>
+
+<refsect1 id='options'><title>Options</title>
+<para>These programs follow the usual GNU command line syntax, 
+with long options starting with two dashes (<literal>--</literal>).  
+A summary of options is included below. However, the ordering is very strict 
+ <option>--help</option> and <option>-h</option> must come before <replaceable>hostname</replaceable>.</para> 
+<variablelist remap='IP'>
+  <varlistentry>
+  <term><option>-v</option></term><term><option>--version</option> 	</term>
+  <listitem>
+<para>Show version information.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--author</option> 	</term>
+  <listitem>
+<para>Show information about the author.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--license</option> 	</term>
+  <listitem>
+<para>Show license information.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--caption <replaceable>caption</replaceable></option> 	</term>
+  <listitem>
+<para>Specify the caption of the window.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--icon <replaceable>icon</replaceable></option> 	</term>
+  <listitem>
+<para>Specify the icon of the window.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--miniicon <replaceable>icon</replaceable></option> 	</term>
+  <listitem>
+<para>Specify the mini-icon of the window.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--dcopserver <replaceable>server</replaceable></option> 	</term>
+  <listitem>
+<para>Specify the DCOP server to use.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--nocrashhandler</option> 	</term>
+  <listitem>
+<para>Disable KDE crash handler (enables core dumps).</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--waitforwm</option> 	</term>
+  <listitem>
+<para>Waits for a compatible window manager to start.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--style <replaceable>style</replaceable></option> 	</term>
+  <listitem>
+<para>Sets the application's GUI style (overrides KDE).</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--geometry <replaceable>geometry</replaceable></option> 	</term>
+  <listitem>
+<para>Sets the geometry of the window.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--display <replaceable>display</replaceable></option> 	</term>
+  <listitem>
+<para>Specifies the X display to use.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--session <replaceable>sessionid</replaceable></option> 	</term>
+  <listitem>
+<para>Restores the application for the given session ID.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--cmap</option> 	</term>
+  <listitem>
+<para>Forces use of an internal colour map on an 8-bit display.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--ncols <replaceable>count</replaceable></option> 	</term>
+  <listitem>
+<para>Limits the number of colours allowed in an 8-bit display.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--nograb</option> 	</term>
+  <listitem>
+<para>Forces Qt to never grab the mouse or keyboard.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--dograb</option> 	</term>
+  <listitem>
+<para>Overrides --nograb, which may be implicitly set.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--sync</option> 	</term>
+  <listitem>
+<para>Forces synchronous mode (for debugging).</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--font <replaceable>font</replaceable></option></term><term><option>--fn <replaceable>font</replaceable></option></term>
+  <listitem>
+<para>Sets the default application font.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--background <replaceable>colour</replaceable></option> 	  <option>--bg <replaceable>colour</replaceable></option></term>
+  <listitem>
+<para>Sets the default background colour and application 
+pallette.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--foreground <replaceable>colour</replaceable></option> 	  <option>--fg <replaceable>colour</replaceable></option></term>
+  <listitem>
+<para>Sets the default foreground colour.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--button <replaceable>colour</replaceable></option></term><term><option>--btn <replaceable>colour</replaceable></option></term>
+  <listitem>
+<para>Sets the default button colour.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--name <replaceable>name</replaceable></option> 	  </term>
+  <listitem>
+<para>Sets the application name.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--title <replaceable>name</replaceable></option> 	  </term>
+  <listitem>
+<para>Sets the application title.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--visual TrueColor</option> 	  </term>
+  <listitem>
+<para>Forces the application to use a True Colour visual on 8-bit 
+displays.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--inputstyle <replaceable>style</replaceable></option> 	  </term>
+  <listitem>
+<para>Sets X Input Method (XIM) input style. Possible values are:  
+<literal>onthespot</literal>, <literal>overthespot</literal>, <literal>offthespot</literal>, and <literal>root</literal>.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--im <replaceable>server</replaceable></option> 	  </term>
+  <listitem>
+<para>Sets X Input Method (XIM) server.</para> 
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--noxim</option> 	  </term>
+  <listitem>
+<para>Disables X Input Method (XIM) support.</para> 
+  </listitem>
+  </varlistentry>
+</variablelist>
+</refsect1>
+
+<refsect1 id="author"><title>Author</title>
+<para>This manual page was written by Daniel Stone <email>daniel@sfarc.net</email> for 
+the <emphasis remap="B">Debian GNU/Linux</emphasis> system (but may be used by others).  Permission is 
+granted to copy, distribute and/or modify this document under 
+the terms of the GNU Free Documentation 
+License, Version 1.1 or any later version published by the Free 
+Software Foundation; with no Invariant Sections, no Front-Cover 
+Texts and no Back-Cover Texts.</para> 
+<!--  created by instant / docbook\-to\-man, Mon 12 Apr 2004, 02:45  -->
+</refsect1>
+</refentry>
+
