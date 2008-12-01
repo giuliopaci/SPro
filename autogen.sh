@@ -8,7 +8,7 @@
 # Generate all necessary files by running automake, autoconf, ...
 #
 
-aclocal
+aclocal -Iauxdir
 autoheader
 automake -a --force-missing
 autoconf

@@ -72,4 +72,4 @@ scompare_SOURCES = scompare.c getopt.c getopt1.c
 scompare_DEPENDENCIES = libspro.a
 
 SUBDIRS = doc auxdir test
-EXTRA_DIST = README INSTALL COPYING CHANGES
+EXTRA_DIST = README INSTALL COPYING CHANGES autogen.sh
