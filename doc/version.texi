@@ -1,4 +1,0 @@
-@set UPDATED 2 February 2007
-@set UPDATED-MONTH February 2007
-@set EDITION 4.0.2
-@set VERSION 4.0.2
