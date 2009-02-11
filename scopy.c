@@ -70,6 +70,10 @@
 #define _scopy_c_
 
 #include <spro.h>
+
+extern char *optarg;
+extern int optind, opterr, optopt;
+#define _GNU_SOURCE
 #include <getopt.h>
 
 static char *cvsid = "$Id: scopy.c 140 2007-04-19 15:46:00Z guig $";
@@ -537,7 +541,7 @@ FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, l
   FILE *f;
 
   if (strcmp(ofn, "-")) {
-    if ((f = fopen(ofn, "w")) == NULL)
+    if ((f = fopen(ofn, "wb")) == NULL)
       return(NULL);
   }
   else
@@ -996,7 +1000,7 @@ transmat_t *read_trans_mat(const char *fn)
   FILE *f;
   void free_trans_mat(transmat_t *);
 
-  if ((f = fopen(fn, "r")) == NULL) {
+  if ((f = fopen(fn, "rb")) == NULL) {
     fprintf(stderr, "scopy error -- cannot open transformation file %s\n", fn);
     return(NULL);
   }

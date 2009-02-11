@@ -55,6 +55,10 @@
 #define _splp_c_
 
 #include <spro.h>
+
+extern char *optarg;
+extern int optind, opterr, optopt;
+#define _GNU_SOURCE
 #include <getopt.h>
 
 static char *cvsid = "$Id: splp.c 141 2008-01-18 10:47:55Z guig $";

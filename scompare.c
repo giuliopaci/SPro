@@ -42,6 +42,10 @@
 static char *cvsid = "$Header$";
 
 #include <spro.h>
+
+extern char *optarg;
+extern int optind, opterr, optopt;
+#define _GNU_SOURCE
 #include <getopt.h>
 
 #define BUFSIZE 10000

@@ -355,7 +355,7 @@ spfstream_t *spf_input_stream_open(const char *fn, int32_t flag, size_t nbytes)
       spf_stream_close(s);
       return(NULL);
     }
-    if ((s->f = fopen(fn, "r")) == NULL) {
+    if ((s->f = fopen(fn, "rb")) == NULL) {
       fprintf(stderr, "spf_input_stream_open(): cannot open input file %s\n", fn);
       spf_stream_close(s);
       return(NULL);
@@ -481,7 +481,7 @@ spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, int32_t
       spf_stream_close(s);
       return(NULL);
     }
-    if ((s->f = fopen(fn, "w")) == NULL) {
+    if ((s->f = fopen(fn, "wb")) == NULL) {
       fprintf(stderr, "spf_output_stream_open(): cannot open input file %s\n", fn);
       spf_stream_close(s);
       return(NULL);

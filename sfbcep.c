@@ -39,6 +39,10 @@
 #define _sfbcep_c_
 
 #include <spro.h>
+
+extern char *optarg;
+extern int optind, opterr, optopt;
+#define _GNU_SOURCE
 #include <getopt.h>
 
 static char *cvsid = "$Id: sfbcep.c 140 2007-04-19 15:46:00Z guig $";
