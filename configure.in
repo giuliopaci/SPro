@@ -38,7 +38,7 @@ AC_INIT(spro.h)
 AC_REVISION($Revision: 137 $)
 AC_PREREQ(2.12)
 AC_CONFIG_AUX_DIR(auxdir)
-AM_INIT_AUTOMAKE(spro, 4.0.2)
+AM_INIT_AUTOMAKE(spro, 4.0.2-papyrus1)
 AM_CONFIG_HEADER(config.h:config.h.in)
 
 dnl Checks for usefuls programs (like a compiler, a precompiler, a linker...)
