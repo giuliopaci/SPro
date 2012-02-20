@@ -146,7 +146,7 @@ target_alias = @target_alias@
 TEXI2HTML = texi2html
 TEXI2HTML_FLAGS = -split_chapter
 info_TEXINFOS = spro.texi 
-spro_TEXINFOS = changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
+spro_TEXINFOS = changes.texi index.texi intro.texi library.texi reference.texi speech.texi user.texi version.texi
 
 # Files from texi2dvi that should be removed, but which Automake does
 # not know.
@@ -467,12 +467,12 @@ uninstall-am: uninstall-info-am
 
 html: spro.html
 
-spro.html: spro.texi changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
+spro.html: spro.texi changes.texi index.texi intro.texi library.texi reference.texi speech.texi user.texi version.texi
 	$(TEXI2HTML) $(TEXI2HTML_FLAGS) $(srcdir)/spro.texi
 
 pdf: spro.pdf
 
-spro.pdf: spro.texi changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
+spro.pdf: spro.texi changes.texi index.texi intro.texi library.texi reference.texi speech.texi user.texi version.texi
 	$(TEXI2DVI) --pdf --batch $(srcdir)/spro.texi
 
 .PHONY: html pdf

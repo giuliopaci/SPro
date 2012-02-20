@@ -28,17 +28,17 @@
 ## CVS log:
 ##
 ##   $Author: guig $
-##   $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
-##   $Revision: 146 $
+##   $Date: 2010-11-09 16:57:22 +0100 (Tue, 09 Nov 2010) $
+##   $Revision: 151 $
 ##
 
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(spro.h)
-AC_REVISION($Revision: 146 $)
+AC_REVISION($Revision: 151 $)
 AC_PREREQ(2.12)
 AC_CONFIG_AUX_DIR(auxdir)
-AM_INIT_AUTOMAKE(spro, 4.1)
+AM_INIT_AUTOMAKE(spro, 5.0)
 AM_CONFIG_HEADER(config.h:config.h.in)
 
 dnl Checks for usefuls programs (like a compiler, a precompiler, a linker...)

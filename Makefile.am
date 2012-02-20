@@ -6,32 +6,34 @@
 ##                                                                         ##
 ## Guig                                                    Fri Jul  5 2002 ##
 ## ----------------------------------------------------------------------- ##
-##                                                                         ##
-##  Copyright (C) 2002-2010 Guillaume Gravier (ggravier@irisa.fr)          ##
-##                                                                         ##
-##  This program is free software; you can redistribute it and/or modify   ##
-##  it under the terms of the GNU General Public License as published by   ##
-##  the Free Software Foundation; either version 2, or (at your option)    ##
-##  any later version.                                                     ##
-##                                                                         ##
-##  This program is distributed in the hope that it will be useful,        ##
-##  but WITHOUT ANY WARRANTY; without even the implied warranty of         ##
-##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          ##
-##  GNU General Public License for more details.                           ##
-##                                                                         ##
-##  You should have received a copy of the GNU General Public License      ##
-##  along with this program; if not, write to the Free Software            ##
-##  Foundation, Inc., 59 Temple Place - Suite 330,                         ##
-##  Boston, MA 02111-1307, USA.                                            ##
-##                                                                         ##
-#############################################################################
-##
-## CVS log:
-##
-##   $Author: guig $
-##   $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
-##   $Revision: 146 $
-##
+## 
+##    $Author: guig $
+##    $Date: 2010-11-09 16:57:22 +0100 (Tue, 09 Nov 2010) $
+##    $Revision: 151 $
+## 
+##  
+##    Copyright (C) 1997-2010 Guillaume Gravier (guig@irisa.fr)
+## 
+##    Permission is hereby granted, free of charge, to any person
+##    obtaining a copy of this software and associated documentation
+##    files (the "Software"), to deal in the Software without
+##    restriction, including without limitation the rights to use, copy,
+##    modify, merge, publish, distribute, sublicense, and/or sell copies
+##    of the Software, and to permit persons to whom the Software is
+##    furnished to do so, subject to the following conditions:
+## 
+##    The above copyright notice and this permission notice shall be
+##    included in all copies or substantial portions of the Software.
+## 
+##    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+##    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+##    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+##    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+##    BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+##    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+##    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+##    SOFTWARE.
+## 
 
 ## The foreign option disables checks for GNU specific files such as README, NEWS...
 AUTOMAKE_OPTIONS = 1.4 foreign
@@ -43,32 +45,32 @@ INCLUDES = @sphere_include@
 
 include_HEADERS = spro.h sptables.h
 lib_LIBRARIES = libspro.a
-noinst_HEADERS = getopt.h
+noinst_HEADERS = gggetopt.h
 
 libspro_a_SOURCES = system.h spro.h sptables.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
 
 bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep splp
 noinst_PROGRAMS = scompare
 
-scopy_SOURCES = scopy.c getopt.c getopt1.c
+scopy_SOURCES = scopy.c gggetopt.c
 scopy_DEPENDENCIES = libspro.a
 
-slpc_SOURCES = slpc.c getopt.c getopt1.c
+slpc_SOURCES = slpc.c gggetopt.c
 slpc_DEPENDENCIES = libspro.a
 
-slpcep_SOURCES = slpcep.c getopt.c getopt1.c
+slpcep_SOURCES = slpcep.c gggetopt.c
 slpcep_DEPENDENCIES = libspro.a
 
-sfbank_SOURCES = sfbank.c getopt.c getopt1.c
+sfbank_SOURCES = sfbank.c gggetopt.c
 sfbank_DEPENDENCIES = libspro.a
 
-sfbcep_SOURCES = sfbcep.c getopt.c getopt1.c
+sfbcep_SOURCES = sfbcep.c gggetopt.c
 sfbcep_DEPENDENCIES = libspro.a
 
-splp_SOURCES = splp.c getopt.c getopt1.c
+splp_SOURCES = splp.c gggetopt.c
 splp_DEPENDENCIES = libspro.a
 
-scompare_SOURCES = scompare.c getopt.c getopt1.c
+scompare_SOURCES = scompare.c gggetopt.c
 scompare_DEPENDENCIES = libspro.a
 
 SUBDIRS = doc auxdir test

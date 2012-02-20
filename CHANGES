@@ -2,14 +2,19 @@
 # Speech PROcessing tools - CHANGES
 #
 # $Author: guig $
-# $Date: 2010-01-04 16:41:47 +0100 (Mon, 04 Jan 2010) $
-# $Revision: 148 $
+# $Date: 2010-11-09 17:12:49 +0100 (Tue, 09 Nov 2010) $
+# $Revision: 153 $
 #
 
 This document describes the changes in SPro between successive
 releases.
 
-Changes from Spro 4.0 to 4.1
+Changes from SPro 4.1 to 5.0
+============================
+
+License has changed from GPL to MIT.
+
+Changes from SPro 4.0 to 4.1
 ============================
 
 Added -H option to all tools to enable the output of a variable length
@@ -22,7 +27,7 @@ normalize energy as well.
 
 Minor bug fix in dct_init().
 
-Changes from Spro 3.3.1 to 4.0
+Changes from SPro 3.3.1 to 4.0
 ==============================
 
 SPro 4.0 is *not* compatible with previous releases and exhibits major

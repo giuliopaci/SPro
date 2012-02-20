@@ -15,7 +15,6 @@
 @SET_MAKE@
 
 #############################################################################
-#############################################################################
 
 
 
@@ -75,29 +74,25 @@ am_libspro_a_OBJECTS = sig.$(OBJEXT) spf.$(OBJEXT) header.$(OBJEXT) \
 libspro_a_OBJECTS = $(am_libspro_a_OBJECTS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am_scompare_OBJECTS = scompare.$(OBJEXT) getopt.$(OBJEXT) \
-	getopt1.$(OBJEXT)
+am_scompare_OBJECTS = scompare.$(OBJEXT) gggetopt.$(OBJEXT)
 scompare_OBJECTS = $(am_scompare_OBJECTS)
 scompare_LDADD = $(LDADD)
-am_scopy_OBJECTS = scopy.$(OBJEXT) getopt.$(OBJEXT) getopt1.$(OBJEXT)
+am_scopy_OBJECTS = scopy.$(OBJEXT) gggetopt.$(OBJEXT)
 scopy_OBJECTS = $(am_scopy_OBJECTS)
 scopy_LDADD = $(LDADD)
-am_sfbank_OBJECTS = sfbank.$(OBJEXT) getopt.$(OBJEXT) \
-	getopt1.$(OBJEXT)
+am_sfbank_OBJECTS = sfbank.$(OBJEXT) gggetopt.$(OBJEXT)
 sfbank_OBJECTS = $(am_sfbank_OBJECTS)
 sfbank_LDADD = $(LDADD)
-am_sfbcep_OBJECTS = sfbcep.$(OBJEXT) getopt.$(OBJEXT) \
-	getopt1.$(OBJEXT)
+am_sfbcep_OBJECTS = sfbcep.$(OBJEXT) gggetopt.$(OBJEXT)
 sfbcep_OBJECTS = $(am_sfbcep_OBJECTS)
 sfbcep_LDADD = $(LDADD)
-am_slpc_OBJECTS = slpc.$(OBJEXT) getopt.$(OBJEXT) getopt1.$(OBJEXT)
+am_slpc_OBJECTS = slpc.$(OBJEXT) gggetopt.$(OBJEXT)
 slpc_OBJECTS = $(am_slpc_OBJECTS)
 slpc_LDADD = $(LDADD)
-am_slpcep_OBJECTS = slpcep.$(OBJEXT) getopt.$(OBJEXT) \
-	getopt1.$(OBJEXT)
+am_slpcep_OBJECTS = slpcep.$(OBJEXT) gggetopt.$(OBJEXT)
 slpcep_OBJECTS = $(am_slpcep_OBJECTS)
 slpcep_LDADD = $(LDADD)
-am_splp_OBJECTS = splp.$(OBJEXT) getopt.$(OBJEXT) getopt1.$(OBJEXT)
+am_splp_OBJECTS = splp.$(OBJEXT) gggetopt.$(OBJEXT)
 splp_OBJECTS = $(am_splp_OBJECTS)
 splp_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -219,21 +214,21 @@ LDADD = -lm -L. -lspro @sphere_lib@
 INCLUDES = @sphere_include@
 include_HEADERS = spro.h sptables.h
 lib_LIBRARIES = libspro.a
-noinst_HEADERS = getopt.h
+noinst_HEADERS = gggetopt.h
 libspro_a_SOURCES = system.h spro.h sptables.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
-scopy_SOURCES = scopy.c getopt.c getopt1.c
+scopy_SOURCES = scopy.c gggetopt.c
 scopy_DEPENDENCIES = libspro.a
-slpc_SOURCES = slpc.c getopt.c getopt1.c
+slpc_SOURCES = slpc.c gggetopt.c
 slpc_DEPENDENCIES = libspro.a
-slpcep_SOURCES = slpcep.c getopt.c getopt1.c
+slpcep_SOURCES = slpcep.c gggetopt.c
 slpcep_DEPENDENCIES = libspro.a
-sfbank_SOURCES = sfbank.c getopt.c getopt1.c
+sfbank_SOURCES = sfbank.c gggetopt.c
 sfbank_DEPENDENCIES = libspro.a
-sfbcep_SOURCES = sfbcep.c getopt.c getopt1.c
+sfbcep_SOURCES = sfbcep.c gggetopt.c
 sfbcep_DEPENDENCIES = libspro.a
-splp_SOURCES = splp.c getopt.c getopt1.c
+splp_SOURCES = splp.c gggetopt.c
 splp_DEPENDENCIES = libspro.a
-scompare_SOURCES = scompare.c getopt.c getopt1.c
+scompare_SOURCES = scompare.c gggetopt.c
 scompare_DEPENDENCIES = libspro.a
 SUBDIRS = doc auxdir test
 EXTRA_DIST = README INSTALL COPYING CHANGES
@@ -381,8 +376,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/convert.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fft.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gggetopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/header.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lpc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Po@am__quote@

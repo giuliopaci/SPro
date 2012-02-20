@@ -1,17 +1,17 @@
 @c
 @c changes.texi -- SPro Reference Manual
 @c
-@c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
+@c Copyright (C) 2003 Guillaume Gravier (guig@irisa.fr)
 @c
 @c $Author: guig $
-@c $Date: 2010-01-04 16:29:09 +0100 (Mon, 04 Jan 2010) $
-@c $Revision: 145 $
+@c $Date: 2010-11-09 16:57:22 +0100 (Tue, 09 Nov 2010) $
+@c $Revision: 151 $
 @c
 
 @c --*-- -------- --*--
 @c --*-- Changes  --*--
 @c --*-- -------- --*--
-@node Changes, Copying, Reference guide, Top
+@node Changes, Index, Reference guide, Top
 @chapter Changes
 
 @c
@@ -73,32 +73,17 @@ is pretty stable and no major modifications are scehduled in the near
 @node Changes from previous version, Compatibility, History, Changes
 @section Changes from previous version
 
-Changes from version 4.0 to version 4.1 are only minor ones but a new
-version was required, mostly to release @command{splp} and to correct a
-couple of minor bugs.
-
-Most significant changes are:
-@itemize
-@item
-Added @command{splp} tool for PLP analysis@footnote{The @command{splp}
-has not yet been validated in a real recognition program and is provided
-as is.}.
-
-@item
-Changed -Z/-R normalization so as to normalize energy as well.
-
-@item
-Added @option{--header} to all tools to enable the output of a variable
-length header.
-@end itemize
-
-Check the svn repository for more details.
+The distribution license has been changed from GPL to a more permissive
+MIT License.  Release 5.0 is in all point similar to 4.1 except for the
+license change.
 
 @c
 @c --*-- Compatibility --*--
 @c
 @node Compatibility,  , Changes from previous version, Changes
 @section Compatibility
+
+Release 5.0 is fully compatible with 4.* releases.
 
 In case you did not get it, @strong{from version 4.0, the compatibility
 is lost with previous releases}. As mentioned previously, the main

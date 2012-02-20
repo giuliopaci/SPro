@@ -2,17 +2,10 @@ This is spro.info, produced by makeinfo version 4.11 from spro.texi.
 
 SPro: Speech Signal Processing Toolkit.
 
-   This file documents the SPro toolkit, release 4.1, for speech signal
+   This file documents the SPro toolkit, release 5.0, for speech signal
 analysis.
 
-   Copyright 1996 - 2007, Guillaume Gravier.
-
-   Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled "GNU
-Free Documentation License".
+   Copyright 1996 - 2010, Guillaume Gravier.
 
 
 File: spro.info,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
@@ -21,7 +14,7 @@ Spro
 ****
 
    This file documents the SPro toolkit for speech signal processing,
-for SPro release 4.1.
+for SPro release 5.0.
 
 * Menu:
 
@@ -31,7 +24,6 @@ for SPro release 4.1.
 * SPro library::                The SPro programmer manual
 * Reference guide::             Quick reference guide
 * Changes::                     Changes in SPro
-* Copying::                     GNU Free Documentation License
 * Index::                       Index
 
 
@@ -45,6 +37,7 @@ File: spro.info,  Node: Introduction,  Next: Speech analysis,  Prev: Top,  Up: T
 * Overview::                    What is SPro good for?
 * Content::                     How to read this document?
 * Installing::                  SPro installation
+* License::                     Distribution license
 * Bugs::                        Reporting bugs
 * Contributors::                People who contributed
 
@@ -120,13 +113,13 @@ SPro tools syntax.
 
    If you have been using a former version of SPro, read *note
 Compatibility:: carefully for crucial information on the
-(in)compatibility of SPro 4.1 with the previous versions.
+(in)compatibility of SPro 5.0 with the previous versions.
 
    Finally, to learn more about the evolution of SPro, the history of
 the various SPro releases is detailed in *note Changes::.
 
 
-File: spro.info,  Node: Installing,  Next: Bugs,  Prev: Content,  Up: Introduction
+File: spro.info,  Node: Installing,  Next: License,  Prev: Content,  Up: Introduction
 
 1.3 Installing SPro
 ===================
@@ -166,19 +159,52 @@ Linux, SPARC/SunOS, and HP-UX. It should also work on AIX though this
 has not been tested so far.
 
 
-File: spro.info,  Node: Bugs,  Next: Contributors,  Prev: Installing,  Up: Introduction
+File: spro.info,  Node: License,  Next: Bugs,  Prev: Installing,  Up: Introduction
 
-1.4 Reporting bugs
+1.4 License
+===========
+
+As of release 5.0, SPro is distributed as a free software under the MIT
+License agreement:
+
+        Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the "Software"), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+       modify, merge, publish, distribute, sublicense, and/or sell
+     copies    of the Software, and to permit persons to whom the
+     Software is    furnished to do so, subject to the following
+     conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+       MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+       BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+     AN    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+     OR IN    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+     IN THE    SOFTWARE.
+
+   Previous releases are distributed under the GNU Public License
+agreement.
+
+
+File: spro.info,  Node: Bugs,  Next: Contributors,  Prev: License,  Up: Introduction
+
+1.5 Reporting bugs
 ==================
 
-Bugs should be reported to <ggravier@irisa.fr>. Feel free to submit a
+Bugs should be reported to <guig@irisa.fr>. Feel free to submit a
 diagnostic or even a patch along with your bug report if you kindly
 bothered to do the trouble-shooting. This is always appreciated.
 
 
 File: spro.info,  Node: Contributors,  Prev: Bugs,  Up: Introduction
 
-1.5 Contributors
+1.6 Contributors
 ================
 
 Along the years, SPro has benefited from the help of several
@@ -419,7 +445,7 @@ case, they are computed on a window centered around the current time.
    To account for the dynamic nature of speech, it is possible to append
 the first and second order derivatives of the chosen features to the
 original feature vector. In SPro, the first order derivative of a
-feature $y_i$ is approximated using a second order limited development
+feature y_i is approximated using a second order limited development
 given by       y_i'(t) = (y_i(t+1) - y_i(t-1) +2 (y_i(t+2) - y_i(t-2))) / 10 .
    Second order differences, known as accelerations, are obtained by
 derivating the first order differences. It is therefore not possible to
@@ -1242,7 +1268,7 @@ The following options are available in `scopy':
 `-c, --compatibility'
 `'
      Turn on compatibility and set the input file format to former SPro
-     format. Default is SPro 4.1 format.
+     format. Default is SPro 5.0 format.
 
 `-I, --bufsize=n'
 `'
@@ -3170,7 +3196,7 @@ Options
 `-c, --compatibility'
 `'
      Turn on compatibility and set the input file format to former SPro
-     format. Default is SPro 4.1 format.
+     format. Default is SPro 5.0 format.
 
 `-I, --bufsize=n'
 `'
@@ -3255,7 +3281,7 @@ Options
      zero. Default is to copy to the end of stream.
 
 
-File: spro.info,  Node: Changes,  Next: Copying,  Prev: Reference guide,  Up: Top
+File: spro.info,  Node: Changes,  Next: Index,  Prev: Reference guide,  Up: Top
 
 6 Changes
 *********
@@ -3318,24 +3344,9 @@ File: spro.info,  Node: Changes from previous version,  Next: Compatibility,  Pr
 6.2 Changes from previous version
 =================================
 
-Changes from version 4.0 to version 4.1 are only minor ones but a new
-version was required, mostly to release `splp' and to correct a couple
-of minor bugs.
-
-   Most significant changes are:
-   * Added `splp' tool for PLP analysis(1).
-
-   * Changed -Z/-R normalization so as to normalize energy as well.
-
-   * Added `--header' to all tools to enable the output of a variable
-     length header.
-
-   Check the svn repository for more details.
-
-   ---------- Footnotes ----------
-
-   (1) The `splp' has not yet been validated in a real recognition
-program and is provided as is.
+The distribution license has been changed from GPL to a more permissive
+MIT License.  Release 5.0 is in all point similar to 4.1 except for the
+license change.
 
 
 File: spro.info,  Node: Compatibility,  Prev: Changes from previous version,  Up: Changes
@@ -3343,7 +3354,9 @@ File: spro.info,  Node: Compatibility,  Prev: Changes from previous version,  Up
 6.3 Compatibility
 =================
 
-In case you did not get it, *from version 4.0, the compatibility is
+Release 5.0 is fully compatible with 4.* releases.
+
+   In case you did not get it, *from version 4.0, the compatibility is
 lost with previous releases*. As mentioned previously, the main reason
 for a new organization of SPro starting with version 4.0 is the ability
 to process arbitrary length streams.
@@ -3358,393 +3371,7 @@ which enables the import of feature files from previous SPro releases.
 based on former releases of the library will not compile anymore.
 
 
-File: spro.info,  Node: Copying,  Next: Index,  Prev: Changes,  Up: Top
-
-Appendix A GNU Free Documentation License
-*****************************************
-
-                        Version 1.1, March 2000
-
-     Copyright (C) 2000 Free Software Foundation, Inc.  59 Temple
-     Place, Suite 330, Boston, MA 02111-1307, USA
-
-     Everyone is permitted to copy and distribute verbatim copies of this
-     license document, but changing it is not allowed.
-
-  0. PREAMBLE
-
-     The purpose of this License is to make a manual, textbook, or other
-     written document "free" in the sense of freedom: to assure everyone
-     the effective freedom to copy and redistribute it, with or without
-     modifying it, either commercially or noncommercially.
-     Secondarily, this License preserves for the author and publisher a
-     way to get credit for their work, while not being considered
-     responsible for modifications made by others.
-
-     This License is a kind of "copyleft", which means that derivative
-     works of the document must themselves be free in the same sense.
-     It complements the GNU General Public License, which is a copyleft
-     license designed for free software.
-
-     We have designed this License in order to use it for manuals for
-     free software, because free software needs free documentation: a
-     free program should come with manuals providing the same freedoms
-     that the software does.  But this License is not limited to
-     software manuals; it can be used for any textual work, regardless
-     of subject matter or whether it is published as a printed book.
-     We recommend this License principally for works whose purpose is
-     instruction or reference.
-
-  1. APPLICABILITY AND DEFINITIONS
-
-     This License applies to any manual or other work that contains a
-     notice placed by the copyright holder saying it can be distributed
-     under the terms of this License.  The "Document", below, refers to
-     any such manual or work.  Any member of the public is a licensee,
-     and is addressed as "you".
-
-     A "Modified Version" of the Document means any work containing the
-     Document or a portion of it, either copied verbatim, or with
-     modifications and/or translated into another language.
-
-     A "Secondary Section" is a named appendix or a front-matter
-     section of the Document that deals exclusively with the
-     relationship of the publishers or authors of the Document to the
-     Document's overall subject (or to related matters) and contains
-     nothing that could fall directly within that overall subject.
-     (For example, if the Document is in part a textbook of
-     mathematics, a Secondary Section may not explain any mathematics.)
-     The relationship could be a matter of historical connection with
-     the subject or with related matters, or of legal, commercial,
-     philosophical, ethical or political position regarding them.
-
-     The "Invariant Sections" are certain Secondary Sections whose
-     titles are designated, as being those of Invariant Sections, in
-     the notice that says that the Document is released under this
-     License.
-
-     The "Cover Texts" are certain short passages of text that are
-     listed, as Front-Cover Texts or Back-Cover Texts, in the notice
-     that says that the Document is released under this License.
-
-     A "Transparent" copy of the Document means a machine-readable copy,
-     represented in a format whose specification is available to the
-     general public, whose contents can be viewed and edited directly
-     and straightforwardly with generic text editors or (for images
-     composed of pixels) generic paint programs or (for drawings) some
-     widely available drawing editor, and that is suitable for input to
-     text formatters or for automatic translation to a variety of
-     formats suitable for input to text formatters.  A copy made in an
-     otherwise Transparent file format whose markup has been designed
-     to thwart or discourage subsequent modification by readers is not
-     Transparent.  A copy that is not "Transparent" is called "Opaque".
-
-     Examples of suitable formats for Transparent copies include plain
-     ASCII without markup, Texinfo input format, LaTeX input format,
-     SGML or XML using a publicly available DTD, and
-     standard-conforming simple HTML designed for human modification.
-     Opaque formats include PostScript, PDF, proprietary formats that
-     can be read and edited only by proprietary word processors, SGML
-     or XML for which the DTD and/or processing tools are not generally
-     available, and the machine-generated HTML produced by some word
-     processors for output purposes only.
-
-     The "Title Page" means, for a printed book, the title page itself,
-     plus such following pages as are needed to hold, legibly, the
-     material this License requires to appear in the title page.  For
-     works in formats which do not have any title page as such, "Title
-     Page" means the text near the most prominent appearance of the
-     work's title, preceding the beginning of the body of the text.
-
-  2. VERBATIM COPYING
-
-     You may copy and distribute the Document in any medium, either
-     commercially or noncommercially, provided that this License, the
-     copyright notices, and the license notice saying this License
-     applies to the Document are reproduced in all copies, and that you
-     add no other conditions whatsoever to those of this License.  You
-     may not use technical measures to obstruct or control the reading
-     or further copying of the copies you make or distribute.  However,
-     you may accept compensation in exchange for copies.  If you
-     distribute a large enough number of copies you must also follow
-     the conditions in section 3.
-
-     You may also lend copies, under the same conditions stated above,
-     and you may publicly display copies.
-
-  3. COPYING IN QUANTITY
-
-     If you publish printed copies of the Document numbering more than
-     100, and the Document's license notice requires Cover Texts, you
-     must enclose the copies in covers that carry, clearly and legibly,
-     all these Cover Texts: Front-Cover Texts on the front cover, and
-     Back-Cover Texts on the back cover.  Both covers must also clearly
-     and legibly identify you as the publisher of these copies.  The
-     front cover must present the full title with all words of the
-     title equally prominent and visible.  You may add other material
-     on the covers in addition.  Copying with changes limited to the
-     covers, as long as they preserve the title of the Document and
-     satisfy these conditions, can be treated as verbatim copying in
-     other respects.
-
-     If the required texts for either cover are too voluminous to fit
-     legibly, you should put the first ones listed (as many as fit
-     reasonably) on the actual cover, and continue the rest onto
-     adjacent pages.
-
-     If you publish or distribute Opaque copies of the Document
-     numbering more than 100, you must either include a
-     machine-readable Transparent copy along with each Opaque copy, or
-     state in or with each Opaque copy a publicly-accessible
-     computer-network location containing a complete Transparent copy
-     of the Document, free of added material, which the general
-     network-using public has access to download anonymously at no
-     charge using public-standard network protocols.  If you use the
-     latter option, you must take reasonably prudent steps, when you
-     begin distribution of Opaque copies in quantity, to ensure that
-     this Transparent copy will remain thus accessible at the stated
-     location until at least one year after the last time you
-     distribute an Opaque copy (directly or through your agents or
-     retailers) of that edition to the public.
-
-     It is requested, but not required, that you contact the authors of
-     the Document well before redistributing any large number of
-     copies, to give them a chance to provide you with an updated
-     version of the Document.
-
-  4. MODIFICATIONS
-
-     You may copy and distribute a Modified Version of the Document
-     under the conditions of sections 2 and 3 above, provided that you
-     release the Modified Version under precisely this License, with
-     the Modified Version filling the role of the Document, thus
-     licensing distribution and modification of the Modified Version to
-     whoever possesses a copy of it.  In addition, you must do these
-     things in the Modified Version:
-
-       A. Use in the Title Page (and on the covers, if any) a title
-          distinct from that of the Document, and from those of
-          previous versions (which should, if there were any, be listed
-          in the History section of the Document).  You may use the
-          same title as a previous version if the original publisher of
-          that version gives permission.
-
-       B. List on the Title Page, as authors, one or more persons or
-          entities responsible for authorship of the modifications in
-          the Modified Version, together with at least five of the
-          principal authors of the Document (all of its principal
-          authors, if it has less than five).
-
-       C. State on the Title page the name of the publisher of the
-          Modified Version, as the publisher.
-
-       D. Preserve all the copyright notices of the Document.
-
-       E. Add an appropriate copyright notice for your modifications
-          adjacent to the other copyright notices.
-
-       F. Include, immediately after the copyright notices, a license
-          notice giving the public permission to use the Modified
-          Version under the terms of this License, in the form shown in
-          the Addendum below.
-
-       G. Preserve in that license notice the full lists of Invariant
-          Sections and required Cover Texts given in the Document's
-          license notice.
-
-       H. Include an unaltered copy of this License.
-
-       I. Preserve the section entitled "History", and its title, and
-          add to it an item stating at least the title, year, new
-          authors, and publisher of the Modified Version as given on
-          the Title Page.  If there is no section entitled "History" in
-          the Document, create one stating the title, year, authors,
-          and publisher of the Document as given on its Title Page,
-          then add an item describing the Modified Version as stated in
-          the previous sentence.
-
-       J. Preserve the network location, if any, given in the Document
-          for public access to a Transparent copy of the Document, and
-          likewise the network locations given in the Document for
-          previous versions it was based on.  These may be placed in
-          the "History" section.  You may omit a network location for a
-          work that was published at least four years before the
-          Document itself, or if the original publisher of the version
-          it refers to gives permission.
-
-       K. In any section entitled "Acknowledgments" or "Dedications",
-          preserve the section's title, and preserve in the section all
-          the substance and tone of each of the contributor
-          acknowledgments and/or dedications given therein.
-
-       L. Preserve all the Invariant Sections of the Document,
-          unaltered in their text and in their titles.  Section numbers
-          or the equivalent are not considered part of the section
-          titles.
-
-       M. Delete any section entitled "Endorsements".  Such a section
-          may not be included in the Modified Version.
-
-       N. Do not retitle any existing section as "Endorsements" or to
-          conflict in title with any Invariant Section.
-
-     If the Modified Version includes new front-matter sections or
-     appendices that qualify as Secondary Sections and contain no
-     material copied from the Document, you may at your option
-     designate some or all of these sections as invariant.  To do this,
-     add their titles to the list of Invariant Sections in the Modified
-     Version's license notice.  These titles must be distinct from any
-     other section titles.
-
-     You may add a section entitled "Endorsements", provided it contains
-     nothing but endorsements of your Modified Version by various
-     parties--for example, statements of peer review or that the text
-     has been approved by an organization as the authoritative
-     definition of a standard.
-
-     You may add a passage of up to five words as a Front-Cover Text,
-     and a passage of up to 25 words as a Back-Cover Text, to the end
-     of the list of Cover Texts in the Modified Version.  Only one
-     passage of Front-Cover Text and one of Back-Cover Text may be
-     added by (or through arrangements made by) any one entity.  If the
-     Document already includes a cover text for the same cover,
-     previously added by you or by arrangement made by the same entity
-     you are acting on behalf of, you may not add another; but you may
-     replace the old one, on explicit permission from the previous
-     publisher that added the old one.
-
-     The author(s) and publisher(s) of the Document do not by this
-     License give permission to use their names for publicity for or to
-     assert or imply endorsement of any Modified Version.
-
-  5. COMBINING DOCUMENTS
-
-     You may combine the Document with other documents released under
-     this License, under the terms defined in section 4 above for
-     modified versions, provided that you include in the combination
-     all of the Invariant Sections of all of the original documents,
-     unmodified, and list them all as Invariant Sections of your
-     combined work in its license notice.
-
-     The combined work need only contain one copy of this License, and
-     multiple identical Invariant Sections may be replaced with a single
-     copy.  If there are multiple Invariant Sections with the same name
-     but different contents, make the title of each such section unique
-     by adding at the end of it, in parentheses, the name of the
-     original author or publisher of that section if known, or else a
-     unique number.  Make the same adjustment to the section titles in
-     the list of Invariant Sections in the license notice of the
-     combined work.
-
-     In the combination, you must combine any sections entitled
-     "History" in the various original documents, forming one section
-     entitled "History"; likewise combine any sections entitled
-     "Acknowledgments", and any sections entitled "Dedications".  You
-     must delete all sections entitled "Endorsements."
-
-  6. COLLECTIONS OF DOCUMENTS
-
-     You may make a collection consisting of the Document and other
-     documents released under this License, and replace the individual
-     copies of this License in the various documents with a single copy
-     that is included in the collection, provided that you follow the
-     rules of this License for verbatim copying of each of the
-     documents in all other respects.
-
-     You may extract a single document from such a collection, and
-     distribute it individually under this License, provided you insert
-     a copy of this License into the extracted document, and follow
-     this License in all other respects regarding verbatim copying of
-     that document.
-
-  7. AGGREGATION WITH INDEPENDENT WORKS
-
-     A compilation of the Document or its derivatives with other
-     separate and independent documents or works, in or on a volume of
-     a storage or distribution medium, does not as a whole count as a
-     Modified Version of the Document, provided no compilation
-     copyright is claimed for the compilation.  Such a compilation is
-     called an "aggregate", and this License does not apply to the
-     other self-contained works thus compiled with the Document, on
-     account of their being thus compiled, if they are not themselves
-     derivative works of the Document.
-
-     If the Cover Text requirement of section 3 is applicable to these
-     copies of the Document, then if the Document is less than one
-     quarter of the entire aggregate, the Document's Cover Texts may be
-     placed on covers that surround only the Document within the
-     aggregate.  Otherwise they must appear on covers around the whole
-     aggregate.
-
-  8. TRANSLATION
-
-     Translation is considered a kind of modification, so you may
-     distribute translations of the Document under the terms of section
-     4.  Replacing Invariant Sections with translations requires special
-     permission from their copyright holders, but you may include
-     translations of some or all Invariant Sections in addition to the
-     original versions of these Invariant Sections.  You may include a
-     translation of this License provided that you also include the
-     original English version of this License.  In case of a
-     disagreement between the translation and the original English
-     version of this License, the original English version will prevail.
-
-  9. TERMINATION
-
-     You may not copy, modify, sublicense, or distribute the Document
-     except as expressly provided for under this License.  Any other
-     attempt to copy, modify, sublicense or distribute the Document is
-     void, and will automatically terminate your rights under this
-     License.  However, parties who have received copies, or rights,
-     from you under this License will not have their licenses
-     terminated so long as such parties remain in full compliance.
-
- 10. FUTURE REVISIONS OF THIS LICENSE
-
-     The Free Software Foundation may publish new, revised versions of
-     the GNU Free Documentation License from time to time.  Such new
-     versions will be similar in spirit to the present version, but may
-     differ in detail to address new problems or concerns.  See
-     `http://www.gnu.org/copyleft/'.
-
-     Each version of the License is given a distinguishing version
-     number.  If the Document specifies that a particular numbered
-     version of this License "or any later version" applies to it, you
-     have the option of following the terms and conditions either of
-     that specified version or of any later version that has been
-     published (not as a draft) by the Free Software Foundation.  If
-     the Document does not specify a version number of this License,
-     you may choose any version ever published (not as a draft) by the
-     Free Software Foundation.
-
-A.1 ADDENDUM: How to use this License for your documents
-========================================================
-
-To use this License in a document you have written, include a copy of
-the License in the document and put the following copyright and license
-notices just after the title page:
-
-       Copyright (C)  YEAR  YOUR NAME.
-       Permission is granted to copy, distribute and/or modify this document
-       under the terms of the GNU Free Documentation License, Version 1.1
-       or any later version published by the Free Software Foundation;
-       with the Invariant Sections being LIST THEIR TITLES, with the
-       Front-Cover Texts being LIST, and with the Back-Cover Texts being LIST.
-       A copy of the license is included in the section entitled ``GNU
-       Free Documentation License''.
-
-   If you have no Invariant Sections, write "with no Invariant Sections"
-instead of saying which ones are invariant.  If you have no Front-Cover
-Texts, write "no Front-Cover Texts" instead of "Front-Cover Texts being
-LIST"; likewise for Back-Cover Texts.
-
-   If your document contains nontrivial examples of program code, we
-recommend releasing these examples in parallel under your choice of
-free software license, such as the GNU General Public License, to
-permit their use in free software.
-
-
-File: spro.info,  Node: Index,  Prev: Copying,  Up: Top
+File: spro.info,  Node: Index,  Prev: Changes,  Up: Top
 
 Index
 *****
@@ -3793,7 +3420,6 @@ Index
                                                               (line  28)
 * get_spf_buf_vec:                       Accessing buffer elements.
                                                               (line  13)
-* GNU Free Documentation License:        Copying.             (line   6)
 * HAMMING window:                        Short term analysis. (line   6)
 * HANNING window:                        Short term analysis. (line   6)
 * header format:                         Feature file format. (line   6)
@@ -3802,6 +3428,7 @@ Index
 * input, stdin:                          I/O via stdin and stdout.
                                                               (line   6)
 * installation:                          Installing.          (line   6)
+* license:                               License.             (line   6)
 * line spectrum pairs:                   LPC analysis.        (line   6)
 * linear prediction coefficients:        LPC analysis.        (line   6)
 * linear prediction, tools:              LPC analysis tools.  (line   6)
@@ -3813,6 +3440,7 @@ Index
 * lpc_to_cep:                            LPC conversion.      (line  18)
 * lpc_to_lsf:                            LPC conversion.      (line  12)
 * MEL frequency scale:                   Filter-banks.        (line   6)
+* MIT License:                           License.             (line   6)
 * normalization, mean removal:           Deltas and normalization.
                                                               (line   6)
 * normalization, variance:               Deltas and normalization.
@@ -3921,119 +3549,118 @@ Index
 
 
 Tag Table:
-Node: Top623
-Node: Introduction1245
-Node: Overview1638
-Node: Content3383
-Node: Installing4612
-Node: Bugs6293
-Node: Contributors6627
-Node: Speech analysis7042
-Node: Short term analysis7895
-Node: Variable resolution9215
-Ref: Variable resolution-Footnote-111191
-Node: Filter-banks11439
-Ref: Filter-banks-Footnote-112938
-Node: LPC analysis12979
-Node: PLP analysis15266
-Node: Cepstrum15917
-Ref: Cepstrum-Footnote-117718
-Node: Deltas and normalization17862
-Node: SPro tools19258
-Node: File formats19733
-Node: Waveform file format20175
-Ref: Waveform file format-Footnote-121857
-Ref: Waveform file format-Footnote-221979
-Node: Feature file format22109
-Ref: Feature file format-Footnote-125630
-Node: Common options25768
-Node: I/O options26381
-Ref: I/O options-Footnote-128603
-Node: Framing options28909
-Node: Feature vector options29673
-Node: Miscellaneous options31055
-Node: I/O via stdin and stdout31471
-Node: Extracting features32347
-Node: Filter-bank analysis tools32681
-Node: Filter-bank magnitudes33142
-Node: Filter-bank cepstrum34499
-Node: Filter-bank options35911
-Node: LPC analysis tools37941
-Node: Linear prediction coefficients38437
-Node: Linear prediction cepstrum39605
-Node: PLP cepstrum40898
-Node: LPC Options41580
-Node: Manipulating features43341
-Node: Operations on feature streams44289
-Ref: Operations on feature streams-Footnote-148533
-Node: Exporting features48591
-Ref: Exporting features-Footnote-151181
-Ref: Exporting features-Footnote-251289
-Ref: Exporting features-Footnote-351408
-Node: Importing from a previous SPro release51524
-Node: Copy options52301
-Node: SPro library54340
-Ref: SPro library-Footnote-155954
-Node: Waveform streams56019
-Node: Waveform memory allocation56723
-Node: Opening waveform streams57660
-Node: Reading frames59441
-Ref: Reading frames-Footnote-162071
-Node: Computing frame energy62160
-Node: Feature description flags62636
-Node: Feature streams65804
-Node: Opening feature streams66606
-Node: Conversion flags67253
-Node: Opening for I/O69813
-Node: Accessing stream attributes71946
-Node: Reading and writing feature vectors74835
-Node: Seeking into a stream77014
-Node: Storing features without streams79080
-Node: Buffer allocation81037
-Node: Accessing buffer elements82891
-Node: Buffer I/O85422
-Node: Buffers and streams86723
-Node: Feature conversion87734
-Ref: Feature conversion-Footnote-193942
-Node: FFT-based functions94130
-Node: Fourier transform94580
-Node: Filter-bank96416
-Node: Cosine transform99535
-Node: LPC-based functions100675
-Node: Linear prediction101243
-Node: LPC conversion102425
-Node: Miscellaneous functions103501
-Node: Reference guide106298
-Node: sfbank106948
-Node: sfbank usage107209
-Node: sfbank synopsis107346
-Node: sfbank options107508
-Node: sfbcep109569
-Node: sfbcep usage109819
-Node: sfbcep synopsis109956
-Node: sfbcep options110133
-Node: slpc112997
-Node: slpc usage113243
-Node: slpc synopsis113370
-Node: slpc options113535
-Node: slpcep115667
-Node: slpcep usage115915
-Node: slpcep synopsis116052
-Node: slpcep options116235
-Node: splp118756
-Node: splp usage119001
-Node: splp synopsis119128
-Node: splp options119314
-Node: scopy122406
-Node: scopy usage122638
-Node: scopy synopsis122770
-Node: scopy options123062
-Node: Changes125500
-Node: History125829
-Node: Changes from previous version128051
-Ref: Changes from previous version-Footnote-1128707
-Node: Compatibility128806
-Node: Copying129671
-Node: Index149548
+Node: Top240
+Node: Introduction799
+Node: Overview1245
+Node: Content2990
+Node: Installing4219
+Node: License5903
+Node: Bugs7322
+Node: Contributors7649
+Node: Speech analysis8064
+Node: Short term analysis8917
+Node: Variable resolution10237
+Ref: Variable resolution-Footnote-112213
+Node: Filter-banks12461
+Ref: Filter-banks-Footnote-113960
+Node: LPC analysis14001
+Node: PLP analysis16288
+Node: Cepstrum16939
+Ref: Cepstrum-Footnote-118740
+Node: Deltas and normalization18884
+Node: SPro tools20278
+Node: File formats20753
+Node: Waveform file format21195
+Ref: Waveform file format-Footnote-122877
+Ref: Waveform file format-Footnote-222999
+Node: Feature file format23129
+Ref: Feature file format-Footnote-126650
+Node: Common options26788
+Node: I/O options27401
+Ref: I/O options-Footnote-129623
+Node: Framing options29929
+Node: Feature vector options30693
+Node: Miscellaneous options32075
+Node: I/O via stdin and stdout32491
+Node: Extracting features33367
+Node: Filter-bank analysis tools33701
+Node: Filter-bank magnitudes34162
+Node: Filter-bank cepstrum35519
+Node: Filter-bank options36931
+Node: LPC analysis tools38961
+Node: Linear prediction coefficients39457
+Node: Linear prediction cepstrum40625
+Node: PLP cepstrum41918
+Node: LPC Options42600
+Node: Manipulating features44361
+Node: Operations on feature streams45309
+Ref: Operations on feature streams-Footnote-149553
+Node: Exporting features49611
+Ref: Exporting features-Footnote-152201
+Ref: Exporting features-Footnote-252309
+Ref: Exporting features-Footnote-352428
+Node: Importing from a previous SPro release52544
+Node: Copy options53321
+Node: SPro library55360
+Ref: SPro library-Footnote-156974
+Node: Waveform streams57039
+Node: Waveform memory allocation57743
+Node: Opening waveform streams58680
+Node: Reading frames60461
+Ref: Reading frames-Footnote-163091
+Node: Computing frame energy63180
+Node: Feature description flags63656
+Node: Feature streams66824
+Node: Opening feature streams67626
+Node: Conversion flags68273
+Node: Opening for I/O70833
+Node: Accessing stream attributes72966
+Node: Reading and writing feature vectors75855
+Node: Seeking into a stream78034
+Node: Storing features without streams80100
+Node: Buffer allocation82057
+Node: Accessing buffer elements83911
+Node: Buffer I/O86442
+Node: Buffers and streams87743
+Node: Feature conversion88754
+Ref: Feature conversion-Footnote-194962
+Node: FFT-based functions95150
+Node: Fourier transform95600
+Node: Filter-bank97436
+Node: Cosine transform100555
+Node: LPC-based functions101695
+Node: Linear prediction102263
+Node: LPC conversion103445
+Node: Miscellaneous functions104521
+Node: Reference guide107318
+Node: sfbank107968
+Node: sfbank usage108229
+Node: sfbank synopsis108366
+Node: sfbank options108528
+Node: sfbcep110589
+Node: sfbcep usage110839
+Node: sfbcep synopsis110976
+Node: sfbcep options111153
+Node: slpc114017
+Node: slpc usage114263
+Node: slpc synopsis114390
+Node: slpc options114555
+Node: slpcep116687
+Node: slpcep usage116935
+Node: slpcep synopsis117072
+Node: slpcep options117255
+Node: splp119776
+Node: splp usage120021
+Node: splp synopsis120148
+Node: splp options120334
+Node: scopy123426
+Node: scopy usage123658
+Node: scopy synopsis123790
+Node: scopy options124082
+Node: Changes126520
+Node: History126847
+Node: Changes from previous version129069
+Node: Compatibility129408
+Node: Index130328
 
 End Tag Table

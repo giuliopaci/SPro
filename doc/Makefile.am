@@ -28,9 +28,9 @@
 ##
 ## CVS log:
 ##
-##   $Author: ggravier $
-##   $Date: 2007-01-30 22:46:46 +0100 (Tue, 30 Jan 2007) $
-##   $Revision: 135 $
+##   $Author: guig $
+##   $Date: 2010-11-09 17:07:44 +0100 (Tue, 09 Nov 2010) $
+##   $Revision: 152 $
 ##
 
 MAKEINFO = @MAKEINFO@ --no-split
@@ -38,7 +38,7 @@ TEXI2HTML = texi2html
 TEXI2HTML_FLAGS = -split_chapter
 
 info_TEXINFOS = spro.texi 
-spro_TEXINFOS = changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
+spro_TEXINFOS = changes.texi index.texi intro.texi library.texi reference.texi speech.texi user.texi version.texi
 
 # Files from texi2dvi that should be removed, but which Automake does
 # not know.
@@ -56,12 +56,12 @@ EXTRA_DIST = asvar-fig1.eps fbank.eps framing.eps \
 
 html: spro.html
 
-spro.html: spro.texi changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
+spro.html: spro.texi changes.texi index.texi intro.texi library.texi reference.texi speech.texi user.texi version.texi
 	$(TEXI2HTML) $(TEXI2HTML_FLAGS) $(srcdir)/spro.texi
 
 pdf: spro.pdf
 
-spro.pdf: spro.texi changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
+spro.pdf: spro.texi changes.texi index.texi intro.texi library.texi reference.texi speech.texi user.texi version.texi
 	$(TEXI2DVI) --pdf --batch $(srcdir)/spro.texi
 
 .PHONY: html pdf

@@ -1,11 +1,11 @@
 @c
 @c intro.texi -- SPro Manual Introduction
 @c
-@c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
+@c Copyright (C) 2003 Guillaume Gravier (guig@irisa.fr)
 @c
-@c $Author: ggravier $
-@c $Date: 2007-01-26 17:00:09 +0100 (Fri, 26 Jan 2007) $
-@c $Revision: 134 $
+@c $Author: guig $
+@c $Date: 2010-11-09 16:57:22 +0100 (Tue, 09 Nov 2010) $
+@c $Revision: 151 $
 @c
 
 @c >>>>> This file is included by sprodoc.texi
@@ -13,13 +13,14 @@
 @c --*-- ------------ --*--
 @c --*-- Introduction --*--
 @c --*-- ------------ --*--
-@node Introduction, Speech analysis, Top, Top
+@node Introduction
 @chapter Introduction
 
 @menu
 * Overview::                    What is SPro good for?
 * Content::                     How to read this document?
 * Installing::                  SPro installation
+* License::                     Distribution license 
 * Bugs::                        Reporting bugs
 * Contributors::                People who contributed
 @end menu
@@ -108,7 +109,7 @@ Finally, to learn more about the evolution of SPro, the history of the
 various SPro releases is detailed in @ref{Changes}.
 
 @c --*-- Installing --*--
-@node Installing, Bugs, Content, Introduction
+@node Installing, License, Content, Introduction
 @section Installing SPro
 
 @cindex installation
@@ -159,15 +160,50 @@ To the author knowledge, SPro has been successfully build and used on
 Linux, SPARC/SunOS, and HP-UX. It should also work on AIX though this
 has not been tested so far.
 
+@c --*-- License --*--
+@node License, Bugs, Installing, Introduction
+@section License
+
+@cindex license
+@cindex MIT License
+
+As of release 5.0, SPro is distributed as a free software under the MIT
+License agreement:
+
+@quotation
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation
+   files (the "Software"), to deal in the Software without
+   restriction, including without limitation the rights to use, copy,
+   modify, merge, publish, distribute, sublicense, and/or sell copies
+   of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+@end quotation
+
+Previous releases are distributed under the GNU Public License
+agreement.
+
 @c --*-- Bugs --*--
-@node Bugs, Contributors, Installing, Introduction
+@node Bugs, Contributors, License, Introduction
 @section Reporting bugs
 
 @cindex bugs, reporting
 
-Bugs should be reported to @email{ggravier@@irisa.fr}. Feel free to
-submit a diagnostic or even a patch along with your bug report if you
-kindly bothered to do the trouble-shooting. This is always appreciated.
+Bugs should be reported to @email{guig@@irisa.fr}. Feel free to submit a
+diagnostic or even a patch along with your bug report if you kindly
+bothered to do the trouble-shooting. This is always appreciated.
 
 @c --*-- Bugs --*--
 @node Contributors,  , Bugs, Introduction
