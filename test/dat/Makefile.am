@@ -29,7 +29,7 @@
 ## CVS log:
 ##
 ##   $Author: ggravier $
-##   $Date: 2003-08-22 18:17:51 +0200(ven, 22 ago 2003) $
+##   $Date: 2003-08-22 18:17:51 +0200 (Fri, 22 Aug 2003) $
 ##   $Revision: 122 $
 ##
 

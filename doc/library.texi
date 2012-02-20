@@ -3,9 +3,9 @@
 @c
 @c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
 @c
-@c $Author: ggravier $
-@c $Date: 2007-01-26 17:00:09 +0100(ven, 26 gen 2007) $
-@c $Revision: 134 $
+@c $Author: guig $
+@c $Date: 2010-01-04 16:29:09 +0100 (Mon, 04 Jan 2010) $
+@c $Revision: 145 $
 @c
 
 @c >>>>> This file is included by sprodoc.texi <<<<<
@@ -822,8 +822,8 @@ the buffer containing the converted data.
 
 In addition to @code{spf_buf_convert}, the function
 @code{spf_buf_normalize} can be used to normalize the mean and variance
-of the features in a buffer.  Similarly, the function
-@code{spf_add_delta} can be used to compute the derivatives of some
+of the features in a buffer.  Similarly, the (fragile) function
+@code{spf_delta_set} can be used to compute the derivatives of some
 features in a buffer. Both functions are @dfn{generic} functions which
 should be used solely for the purpose of non-standard operations. For
 example, normalizing the dynamic features or the energy variance is not
@@ -843,13 +843,15 @@ around the current frame. Return 0 upon success or an error code
 otherwise.
 @end deftypefn
 
-@deftypefn Function int spf_add_delta (spfbuf_t *@var{buf}, unsigned short @var{s}, unsigned short @var{e}, unsigned short @var{d})
-Compute derivatives of features @var{s} to @var{e} included in
-@var{buf}, writing the derivatives starting at index @var{d} in the
-feature vector. Indices @var{s}, @var{e} and @var{d} are bins in the
-feature vectors and starts at 0. The buffer must have been allocated
-with sufficient memory to store the derivatives. Otherwise, an error is
-returned. Return 0 upon success.
+@deftypefn Function int spf_delta_set (spfbuf_t *@var{ibuf}, unsigned short @var{in_k}, unsigned short @var{d}, spfbuf_t *@var{obuf}, unsigned short @var{out_k})
+Compute derivatives of features in the input buffer @var{ibuf}, from bin
+@var{in_k} for @var{d} bins, writing the result from bin @var{out_k} in
+the output buffer @var{obuf}. The output buffer can be the same as the
+input buffer and must have been properly allocated. This function is
+fragile as no mermory check is performed. It is therefore not exported
+and one should rather use @code{spf_buf_convert} directly. Should you
+require this function, you need to define @code{_convert_c_} before the
+inclusion of @file{spro.h}.
 @end deftypefn
 
 @deftypefn Function int scale_energy (spfbuf_t *@var{buf}, unsigned short @var{j}, float @var{s}, unsigned long @var{wl})

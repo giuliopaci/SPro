@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 1997-2007 Guillaume Gravier (ggravier@irisa.fr)             */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -28,8 +28,8 @@
  * CVS log:
  *
  * $Author: guig $
- * $Date: 2007-04-19 17:46:00 +0200(gio, 19 apr 2007) $
- * $Revision: 140 $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  */
 
 /*
@@ -76,7 +76,7 @@ extern int optind, opterr, optopt;
 #define _GNU_SOURCE
 #include <getopt.h>
 
-static char *cvsid = "$Id: scopy.c 140 2007-04-19 15:46:00Z guig $";
+static char *cvsid = "$Id: scopy.c 146 2010-01-04 15:31:49Z guig $";
 
 /* ----------------------------------------------- */
 /* ----- global variables set by read_args() ----- */

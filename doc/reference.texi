@@ -3,9 +3,9 @@
 @c
 @c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
 @c
-@c $Author: ggravier $
-@c $Date: 2007-01-30 22:46:46 +0100(mar, 30 gen 2007) $
-@c $Revision: 135 $
+@c $Author: guig $
+@c $Date: 2010-01-04 16:29:09 +0100 (Mon, 04 Jan 2010) $
+@c $Revision: 145 $
 @c
 
 @c --*-- ---------------- --*--
@@ -557,7 +557,7 @@ Print version information and exit.
 @page
 @c -- splp
 @node splp, scopy, slpcep, Reference guide
-@section @command{spl}
+@section @command{splp}
 
 @menu
 * splp usage::                  Syntax

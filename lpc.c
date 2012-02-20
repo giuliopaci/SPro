@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Oct. 2002 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002-2007 Guillaume Gravier (ggravier@irisa.fr)             */
+/*  Copyright (C) 2002-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2007-01-30 22:59:36 +0100(mar, 30 gen 2007) $
- * $Revision: 137 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 

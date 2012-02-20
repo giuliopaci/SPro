@@ -29,7 +29,7 @@
 ## CVS log:
 ##
 ##   $Author: ggravier $
-##   $Date: 2007-02-01 16:33:49 +0100(gio, 01 feb 2007) $
+##   $Date: 2007-02-01 16:33:49 +0100 (Thu, 01 Feb 2007) $
 ##   $Revision: 138 $
 ##
 

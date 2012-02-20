@@ -6,7 +6,7 @@
 ## $Rcsfile$
 ## $Author: ggravier $
 ##
-## $Date: 2002-07-25 16:14:32 +0200(gio, 25 lug 2002) $
+## $Date: 2002-07-25 16:14:32 +0200 (Thu, 25 Jul 2002) $
 ## $Revision: 61 $
 ## $Log$
 ## Revision 1.1  2002/07/25 14:14:31  ggravier

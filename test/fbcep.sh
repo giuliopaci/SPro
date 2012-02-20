@@ -3,7 +3,7 @@
 # Test sfbcep program
 #
 # $Author: ggravier $
-# $Date: 2007-01-19 17:35:24 +0100(ven, 19 gen 2007) $
+# $Date: 2007-01-19 17:35:24 +0100 (Fri, 19 Jan 2007) $
 # $Revision: 132 $
 #
 
