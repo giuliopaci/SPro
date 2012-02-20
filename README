@@ -1,9 +1,9 @@
 #
 # Speech PROcessing tools - README
 #
-# $Author: ggravier $
-# $Date: 2007-01-19 17:34:29 +0100 (Fri, 19 Jan 2007) $
-# $Revision: 131 $
+# $Author: guig $
+# $Date: 2010-11-09 17:07:44 +0100 (Tue, 09 Nov 2010) $
+# $Revision: 152 $
 #
 
 INTRODUCTION
@@ -16,8 +16,8 @@ filter-bank and cepstral analysis).
 
 LICENSE
 
-SPro is distributed "as is" under the GNU Public License. See COPYING
-for details on the license.
+SPro is distributed "as is" under the MIT License. See COPYING for
+details on the license.
 
 CONTENT
 
@@ -50,7 +50,6 @@ CONTENT
   - index.texi
   - intro.texi
   - library.texi
-  - license.texi
   - reference.texi
   - speech.texi
   - user.texi

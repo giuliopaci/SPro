@@ -17,14 +17,14 @@ SPro: Speech Signal Processing Toolkit.
 This file documents the SPro toolkit, release @value{VERSION}, for
 speech signal analysis.
 
-Copyright 1996 -- 2007, Guillaume Gravier.
+Copyright 1996 -- 2010, Guillaume Gravier.
 
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
+@c Permission is granted to copy, distribute and/or modify this document
+@c under the terms of the GNU Free Documentation License, Version 1.1 or
+@c any later version published by the Free Software Foundation; with no
+@c Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+@c Texts.  A copy of the license is included in the section entitled ``GNU
+@c Free Documentation License''.
 @end ifinfo
 
 @titlepage
@@ -35,14 +35,14 @@ Free Documentation License''.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1996 -- 2007, Guillaume Gravier.
+Copyright @copyright{} 1996 -- 2010, Guillaume Gravier.
 
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
+@c Permission is granted to copy, distribute and/or modify this document
+@c under the terms of the GNU Free Documentation License, Version 1.1 or
+@c any later version published by the Free Software Foundation; with no
+@c Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+@c Texts.  A copy of the license is included in the section entitled ``GNU
+@c Free Documentation License''.
 @end titlepage
 
 @c -- Top node
@@ -65,7 +65,6 @@ SPro release @value{VERSION}.
 * SPro library::                The SPro programmer manual
 * Reference guide::             Quick reference guide
 * Changes::                     Changes in SPro
-* Copying::                     GNU Free Documentation License
 * Index::                       Index
 @end menu
 
@@ -75,7 +74,7 @@ SPro release @value{VERSION}.
 @include library.texi
 @include reference.texi
 @include changes.texi
-@include license.texi
+@c @include license.texi
 @include index.texi
 
 @contents
