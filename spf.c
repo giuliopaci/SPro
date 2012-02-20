@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Sep. 2002 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 2002-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/08/22 12:44:10 $
- * $Revision: 1.4 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -132,14 +132,14 @@ spfbuf_t *spf_buf_alloc(unsigned short dim, size_t nbytes)
     p->s = (spf_t *)NULL;
 
     if (nbytes) {
+
       if ((p->s = (spf_t *)malloc(nbytes)) == NULL) {
 	free(p);
 	return(NULL);
       }
-      else {
-	p->adim = p->dim = dim;
-	p->m = nbytes / (dim * sizeof(spf_t));
-      }
+
+      p->adim = p->dim = dim;
+      p->m = nbytes / (dim * sizeof(spf_t));
     }
   }
 
@@ -371,9 +371,7 @@ spfstream_t *spf_input_stream_open(const char *fn, long flag, size_t nbytes)
     return(NULL);
   }
   
-  if (fread(&(s->idim), SIZEOF_SHORT, 1, s->f) != 1 || 
-      fread(&(s->iflag), SIZEOF_LONG, 1, s->f) != 1 || 
-      fread(&(s->Fs), sizeof(float), 1, s->f) != 1) {
+  if (fread(&(s->idim), SIZEOF_SHORT, 1, s->f) != 1 || fread(&(s->iflag), SIZEOF_LONG, 1, s->f) != 1 || fread(&(s->Fs), sizeof(float), 1, s->f) != 1) {
     fprintf(stderr, "spf_header_read(): cannot read fixed header\n");
     spf_stream_close(s);
     return(NULL);
@@ -412,15 +410,15 @@ spfstream_t *spf_input_stream_open(const char *fn, long flag, size_t nbytes)
   return(s);
 }
 
-/* --------------------------------------------------------------------------------------------------------------------------- */
-/* ----- spfstream_t *spf_output_stream_open(const char *, unsigned short, long, long, float, const spfield_t *, size_t) ----- */
-/* --------------------------------------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------------------------------------------------- */
+/* ----- spfstream_t *spf_output_stream_open(const char *, unsigned short, long, long, float, const struct spf_header_field *, size_t) ----- */
+/* ----------------------------------------------------------------------------------------------------------------------------------------- */
 /*
  * Open output feature stream. Return a pointer to the stream or NULL
  * in case of error.
  */
 spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, long iflag, 
-				    long cflag, float frate, const spfield_t *vh, size_t nbytes)
+				    long cflag, float frate, const struct spf_header_field *vh, size_t nbytes)
 {
   spfstream_t *s;
   unsigned short dim, idx[9];
@@ -596,11 +594,12 @@ unsigned long spf_stream_write(spfstream_t *s, spf_t *p, unsigned long n)
   spf_t *pp = p;
 
   if (s->iomode != SPRO_STREAM_WRITE_MODE) {
-    fprintf(stderr, "spf_stream_write(): cannot write to an inut stream!\n");
+    fprintf(stderr, "spf_stream_write(): cannot write to an input stream!\n");
     return(0);
   }
 
   for (i = 0; i < n; i++) {
+
     if (spf_buf_append(s->buf, pp, s->idim, 0) == NULL) {
       /* 
 	 If cannot append, flush stream and retry. 
@@ -611,6 +610,7 @@ unsigned long spf_stream_write(spfstream_t *s, spf_t *p, unsigned long n)
       if (spf_buf_append(s->buf, pp, s->idim, 0) == NULL)
 	return(nwritten);
     }
+
     nwritten++;
     s->idx++;
     pp += s->idim;
@@ -661,7 +661,7 @@ unsigned long spf_stream_flush(spfstream_t *s)
 /* ----- int spf_stream_seek(spfstream_t *, unsigned long, int) ----- */
 /* ------------------------------------------------------------------ */
 /*
- * Seek into the stream so that the next call to get_next_spf_stream()
+ * Seek into the stream so that the next call to get_next_spf_frame()
  * returns a pointer to the (absolute) specified frame number. Return
  * 0 if ok.
  */

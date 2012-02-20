@@ -2,8 +2,8 @@
 # Speech PROcessing tools - README
 #
 # $Author: ggravier $
-# $Date: 2003/07/24 15:14:07 $
-# $Revision: 1.3 $
+# $Date: 2007-01-19 17:34:29 +0100 (Fri, 19 Jan 2007) $
+# $Revision: 131 $
 #
 
 INTRODUCTION
@@ -45,7 +45,16 @@ CONTENT
 
  Documentation:
 
-  - sprodoc.tex
+  - spro.texi
+  - changes.texi
+  - index.texi
+  - intro.texi
+  - library.texi
+  - license.texi
+  - reference.texi
+  - speech.texi
+  - user.texi
+  - version.texi
 
 INSTALLATION
 

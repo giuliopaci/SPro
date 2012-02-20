@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/04/09 16:11:49 $
- * $Revision: 1.1 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -55,36 +55,6 @@
 #define _convert_c_
 
 #include <spro.h>
-
-/* ----------------------------------------------------------------------------------------- */
-/* ----- int spf_add_delta(spfbuf_t *, unsigned short, unsigned short, unsigned short) ----- */
-/* ----------------------------------------------------------------------------------------- */
-/*
- * Add delta coefficients for [a, a + n - 1] bins at offset at. 
- * Return 0 if ok or an error code otherwise.
- */
-int spf_add_delta(spfbuf_t *buf, unsigned short a, unsigned short n, unsigned short at)
-{
-  unsigned short b = a + n - 1;
-
-  /* sanity check */
-  if (b > buf->dim) {
-    fprintf(stderr, "spf_add_delta(): invalid bounds [%u,%u] (dim=%u)\n", a, b, buf->dim);
-    return(SPRO_BAD_PARAM_ERR);
-  }
-  if (at + n - 1> buf->dim) {
-    fprintf(stderr, "spf_add_delta(): cannot write %u delta coefficients at offset %u (dim=%u)\n", n, at, buf->dim);
-    return(SPRO_BAD_PARAM_ERR);
-  }
-  if (at <= b) {
-    fprintf(stderr, "spf_add_delta(): overlapping delta and static coefficients\n");
-    return(SPRO_BAD_PARAM_ERR);
-  }
-
-  spf_delta_set(buf, a, n, buf, at);
-
-  return(0);
-}
 
 /* --------------------------------------------------------------------------------- */
 /* ----- spfbuf_t *spf_buf_convert(spfbuf_t *, long, long, unsigned long, int) ----- */
@@ -155,12 +125,14 @@ spfbuf_t *spf_buf_convert(spfbuf_t *ibuf, long iflag, long oflag, unsigned long 
   }
   
   /* global normalizations */
-  if (((oflag & WITHZ) && ! (iflag & WITHZ)) || ((oflag & WITHR) && ! (iflag & WITHR)))
-    if (spf_buf_normalize(obuf, 0, sdim - 1, wl, oflag & WITHR) != 0) {
+  if (((oflag & WITHZ) && ! (iflag & WITHZ)) || ((oflag & WITHR) && ! (iflag & WITHR))) {
+    unsigned short to = (oflag & WITHE) ? ibins[1] + 1: ibins[1]; /* include energy */
+    if (spf_buf_normalize(obuf, 0, to, wl, oflag & WITHR) != 0) {
       fprintf(stderr, "spf_buf_convert(): cannot normalize output buffer\n");
       if (mode != SPRO_CONV_UPDATE) spf_buf_free(obuf);
       return(NULL);
     }
+  }
   
   /* add deltas */
   if (oflag & WITHD) {

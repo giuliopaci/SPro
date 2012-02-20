@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/08/22 12:44:09 $
- * $Revision: 1.5 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -293,6 +293,8 @@ int spf_buf_normalize(spfbuf_t *buf, unsigned short si, unsigned short ei, unsig
 /* -------------------------------------------------------------------------------- */
 /*
  * Scale the specified coefficient according to c'[j] = s * (c[j] - max) + 1.0.
+ *
+ * Contributed by Alexey Ozerov.
  */
 int scale_energy(spfbuf_t *buf, unsigned short j, float s, unsigned long ws)
 {
@@ -351,7 +353,8 @@ int scale_energy(spfbuf_t *buf, unsigned short j, float s, unsigned long ws)
 
       /* update memory */
       i_beg++;
-      if( i_beg >= w_prev ) i_beg -= w_prev;
+      if (i_beg >= w_prev) 
+	i_beg -= w_prev;
 
       *(prev_mem + i_beg) = *(p);
 
@@ -368,6 +371,7 @@ int scale_energy(spfbuf_t *buf, unsigned short j, float s, unsigned long ws)
       }
 
       ii_max = (w_next < (buf->n - i)) ? (w_next) : (buf->n - i);
+
       for (ii = 1; ii <= ii_max; ii++)
 	if (*(p + ii*buf->adim) > m)
 	  m = *(p + ii*buf->adim);

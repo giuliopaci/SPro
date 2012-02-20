@@ -3,9 +3,9 @@
 @c
 @c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
 @c
-@c $Author: ggravier $
-@c $Date: 2003/08/22 16:18:32 $
-@c $Revision: 1.2 $
+@c $Author: guig $
+@c $Date: 2010-01-04 16:29:09 +0100 (Mon, 04 Jan 2010) $
+@c $Revision: 145 $
 @c
 
 @c >>>>> This file is included by sprodoc.texi <<<<<
@@ -101,9 +101,11 @@ done. Reading frames from a stream is explained in the next section.
 Open stream in file @var{fn} in read mode, where the file format is
 @var{fmt}. If @var{fn} is @code{NULL}, input will be made from
 @code{stdin}. Valid file formats are @code{SPRO_SIG_PCM16_FORMAT},
+@code{SPRO_SIG_ALAW_FORMAT}, @code{SPRO_SIG_ULAW_FORMAT},
 @code{SPRO_SIG_WAVE_FORMAT} and @code{SPRO_SIG_SPHERE_FORMAT} if the
 library has been compiled to support the @acronym{SPHERE} file
-format. If @var{fmt} is @code{SPRO_SIG_PCM16_FORMAT}, the sample rate
+format. If @var{fmt} is @code{SPRO_SIG_PCM16_FORMAT}, @code{SPRO_SIG_ALAW_FORMAT}
+or @code{SPRO_SIG_ULAW_FORMAT}, the sample rate
 @var{Fs} (in Hz) must be specified. Otherwise, the sample rate is read
 from the header and @var{Fs} is ignored. The input buffer size is
 specified by @var{nbytes}, which means @var{nbytes} bytes will be
@@ -384,7 +386,7 @@ added via a possibly @code{NULL} array of fields @var{hd}, where
 stream.
 @end deftypefn
 
-@deftypefn {Function} {void} spf_stream_close (spfstream_t *@var{f})
+@deftypefn {Function} {void} spf_output_stream_open (spfstream_t *@var{f})
 Close feature stream @var{f} opened with one of the
 @code{spf_*_stream_open} function, releasing allocated memory.
 @end deftypefn
@@ -465,7 +467,7 @@ of fields added to the header.
 
 The functions documented in this section are provided to read from or
 write to feature streams. Reading can be done in one of two ways. You
-can either read vector by vector using @code{get_next_spf_frame} or read
+can either read vector by vector using @code{get_next_spf_vec} or read
 in at once all the data in the feature buffer using
 @code{spf_stream_read}. Writing can only be done vector by vector using
 @code{spf_stream_write}, unless accessing directly the stream
@@ -485,7 +487,7 @@ Fill in stream @var{f} buffer, reading until the buffer is full or the
 end of stream. Return the number of frames read.
 @end deftypefn
 
-@deftypefn {Function} {spf_t *} get_next_spf_frame (spfstream_t *@var{f})
+@deftypefn {Function} {spf_t *} get_next_spf_vec (spfstream_t *@var{f})
 Return a pointer to the next feature vector in stream @var{f} or
 @code{NULL} at the end of stream. @xref{Seeking into a stream}, for
 details on how to get a particular vector in the stream.
@@ -516,7 +518,7 @@ useful. Functions to seek to a specified feature vector in a stream are
 provided. Feature vectors are indexed starting from 0. In read mode,
 seeking to a particular frame @var{n} using @code{spf_stream_seek} means
 that a pointer to frame @var{n} is returned by the next call to
-@code{get_next_spf_frame}. In write mode, the next call to
+@code{get_next_spf_vec}. In write mode, the next call to
 @code{spf_stream_write} will start writing at frame @var{n}, thus
 overwriting frame @var{n} and possibly the following if those frames add
 already been set.
@@ -820,8 +822,8 @@ the buffer containing the converted data.
 
 In addition to @code{spf_buf_convert}, the function
 @code{spf_buf_normalize} can be used to normalize the mean and variance
-of the features in a buffer.  Similarly, the function
-@code{spf_add_delta} can be used to compute the derivatives of some
+of the features in a buffer.  Similarly, the (fragile) function
+@code{spf_delta_set} can be used to compute the derivatives of some
 features in a buffer. Both functions are @dfn{generic} functions which
 should be used solely for the purpose of non-standard operations. For
 example, normalizing the dynamic features or the energy variance is not
@@ -841,13 +843,15 @@ around the current frame. Return 0 upon success or an error code
 otherwise.
 @end deftypefn
 
-@deftypefn Function int spf_add_delta (spfbuf_t *@var{buf}, unsigned short @var{s}, unsigned short @var{e}, unsigned short @var{d})
-Compute derivatives of features @var{s} to @var{e} included in
-@var{buf}, writing the derivatives starting at index @var{d} in the
-feature vector. Indices @var{s}, @var{e} and @var{d} are bins in the
-feature vectors and starts at 0. The buffer must have been allocated
-with sufficient memory to store the derivatives. Otherwise, an error is
-returned. Return 0 upon success.
+@deftypefn Function int spf_delta_set (spfbuf_t *@var{ibuf}, unsigned short @var{in_k}, unsigned short @var{d}, spfbuf_t *@var{obuf}, unsigned short @var{out_k})
+Compute derivatives of features in the input buffer @var{ibuf}, from bin
+@var{in_k} for @var{d} bins, writing the result from bin @var{out_k} in
+the output buffer @var{obuf}. The output buffer can be the same as the
+input buffer and must have been properly allocated. This function is
+fragile as no mermory check is performed. It is therefore not exported
+and one should rather use @code{spf_buf_convert} directly. Should you
+require this function, you need to define @code{_convert_c_} before the
+inclusion of @file{spro.h}.
 @end deftypefn
 
 @deftypefn Function int scale_energy (spfbuf_t *@var{buf}, unsigned short @var{j}, float @var{s}, unsigned long @var{wl})
@@ -923,13 +927,13 @@ and the filter-bank integration embedded in function
 @code{log_filter_bank}. Using @code{log_filter_bank} requires that the
 FFT kernel has been initialized previously.
 
-@deftypefn Function {unsigned short} set_alpha_idx (unsigned short *@var{n}, float @var{fmin}, float @var{fmax}, float @var{Fs})
+@deftypefn Function {unsigned short} set_mel_idx (unsigned short *@var{n}, float @var{fmin}, float @var{fmax}, float @var{Fs})
 Set cutoff frequencies indices for @var{n} filters in the bandwidth
 @var{fmin} --- @var{fmax}, according to @acronym{MEL} frequency
-warping. Lower and upper frequency bounds, @var{fmin} and @var{fmax}
-are normalized frequencies between 0 and 0.5. If @var{fmax} is lower
-than or equal to @var{fmin}, the upper bound will be considered to be
-the Nyquist frequency (1/2). The signal sample rate @var{Fs} is given in
+warping. Lower and upper frequency bounds, @var{fmin} and @var{fmax} are
+normalized frequencies between 0 and 0.5. If @var{fmax} is lower than or
+equal to @var{fmin}, the upper bound will be considered to be the
+Nyquist frequency (1/2). The signal sample rate @var{Fs} is given in
 Hz. Return a vector of @var{n}+2 indices or @code{NULL} in case of
 error.
 @end deftypefn
@@ -945,13 +949,29 @@ Nyquist frequency (1/2). Return a vector of @var{n}+2 indices or
 @code{NULL} in case of error.
 @end deftypefn
 
-@deftypefn Function int log_filter_bank (spsig_t *@var{s}, unsigned short @var{n}, unsigned short *@var{idx}, spf_t *@var{e})
+@deftypefn Function int filter_bank (spsig_t *@var{s}, unsigned short @var{n}, unsigned short *@var{idx}, int @var{usepower}, int @var{uselog}, spf_t *@var{e})
 Apply @var{n} channel triangular filter-bank to signal @var{s}. The
-indices in the FFT magnitude vector of the channels cutoff frequencies
-are given in @var{idx}, which should have been initialized with one of
-the @code{set_xxx_idx} functions above. Channel log-magnitudes are
-returned in vector @var{e}, previously allocated to contain at least
-@var{n} elements. Return 0 upon success.
+indices in the FFT module vector of the channels cutoff frequencies are
+given in @var{idx}, which should have been initialized with one of the
+@code{set_*_idx} functions above. Depending on the two boolean flags
+@var{usepower} and @var{uselog}, the power or the magnitude spectrum or
+log-spectrum can be computed and returned in vector @var{e}, previously
+allocated to contain at least @var{n} elements. Return 0 upon success.
+@end deftypefn
+
+@deftypefn Macro int log_filter_bank (spsig_t *@var{s}, unsigned short @var{n}, unsigned short *@var{idx}, spf_t *@var{e})
+This function is a macro to @code{filter_bank} which returns the log of
+the magnitude spectrum. The use of @code{log_filter_bank} is deprecated
+and is solely provided for sake of compatibility with previous versions
+of SPro.
+@end deftypefn
+
+@deftypefn Function double * set_loudness_curve (unsigned short @var{n}, unsigned short *@var{idx}, float @var{Fs})
+Allocate memory and initialize a loudness equalization filter for
+@var{n} filters. Centre frequencies of the filters are determined from
+the indexes @var{idx}, obtained from one of the @code{set_*_idx}
+functions, and converted in Hertz assuming a signal sample rate of
+@var{Fs}.
 @end deftypefn
 
 @c -- Cosine transform

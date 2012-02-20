@@ -1,13 +1,26 @@
 #
 # Speech PROcessing tools - CHANGES
 #
-# $Author: ggravier $
-# $Date: 2003/04/09 16:11:49 $
-# $Revision: 1.2 $
+# $Author: guig $
+# $Date: 2010-01-04 16:41:47 +0100 (Mon, 04 Jan 2010) $
+# $Revision: 148 $
 #
 
 This document describes the changes in SPro between successive
 releases.
+
+Changes from Spro 4.0 to 4.1
+============================
+
+Added -H option to all tools to enable the output of a variable length
+header describing all the parameters that are not saved otherwise.
+
+Added splp tool for PLP analysis.
+
+Added mean removal and variance normalization behavior so as to
+normalize energy as well.
+
+Minor bug fix in dct_init().
 
 Changes from Spro 3.3.1 to 4.0
 ==============================

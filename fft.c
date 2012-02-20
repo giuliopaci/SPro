@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/08/22 12:44:09 $
- * $Revision: 1.2 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -232,12 +232,20 @@ int dct_init(unsigned short nin, unsigned short nout)
   unsigned short i, j;
 
   if (nin && nout) {
+    float ** p = _dctk;
+
     if ((_dctk = (float **)realloc(_dctk, nout * sizeof(float *))) == NULL) {
       fprintf(stderr, "[SPro erro r%d] DCTInit(): cannot allocate DCT kernel", SPRO_ALLOC_ERR);
       return(SPRO_ALLOC_ERR);
     }
     
     for (i = 0; i < nout; i++) {
+      
+      /* Added for realloc to work properly if _dctk[i] has not yet
+	 been initialized. Thanks to Frederic Wils for pointing this
+	 out and sending the patch. */ 
+      if (! p) 
+	_dctk[i] = NULL;
 
       if ((_dctk[i] = (float *)realloc(_dctk[i], nin * sizeof(float))) == NULL) {
 	fprintf(stderr, "[SPro error %d] DCTInit(): cannot allocate DCT kernel", SPRO_ALLOC_ERR);
@@ -390,6 +398,46 @@ unsigned short *set_mel_idx(unsigned short n, float fmin, float fmax, float srat
   return(idx);
 }
 
+/* -------------------------------------------------------------------------------- */
+/* ----- double * set_loudness_curve(unsigned short, unsigned short *, float) ----- */
+/* -------------------------------------------------------------------------------- */
+/*
+ * Set equal loudness curve filter for power spectrum equalization in
+ * PLP analysis. According to Hermansky and Nelson Rasta PLP source
+ * code.
+ */
+double * set_loudness_curve(unsigned short nfilters, unsigned short *idx, float srate)
+{
+  unsigned short i;
+  double *eq = NULL;
+  double z, f, ff, ftmp;
+  
+  eq = (double *)malloc(nfilters * sizeof(double));
+  
+  if (eq == NULL)
+    return(eq);
+  
+  z = (double)srate / (2.0 * (double)(_fftn / 2 - 1));
+
+  for (i = 0; i < nfilters; i++) {
+    /* get central frequency (in Hz) of the current filter */
+    f = idx[i+1] * z; 
+    ff = f * f;
+    ftmp = ff / (ff + 1.6e5);
+    *(eq+i) = ftmp * ftmp * ((ff + 1.44e6) / (ff + 9.61e6));
+  }
+  
+  return eq;
+}
+
+
+#if 0
+/*
+   This function is now replaced by the generic function
+   filter_bank(). For sake of compatibility, log_filter_bank() is
+   defined as a macro for filter_bank(x, nfilt, idx, 0, 1, e) in
+   spro.h.
+*/  
 /* ------------------------------------------------------------------------------------- */
 /* ----- int log_filter_bank(spsig_t *, unsigned short, unsigned short *, spf_t *) ----- */
 /* ------------------------------------------------------------------------------------- */
@@ -458,6 +506,86 @@ int log_filter_bank(spsig_t *x, unsigned short nfilt, unsigned short *idx, spf_t
     }
 
     *(e+i) = (s < SPRO_ENERGY_FLOOR) ? (spf_t)log(SPRO_ENERGY_FLOOR) : (spf_t)log(s);
+  }
+
+  return(0);
+}
+#endif
+
+/* ------------------------------------------------------------------------------------------- */
+/* ----- int filter_bank(spsig_t *, unsigned short, unsigned short *, int, int, spf_t *) ----- */
+/* ------------------------------------------------------------------------------------------- */
+/*
+ * Apply triangular filter bank to the energy (module) or power
+ * spectrum, and return the (log of) the energy in each band. Table
+ * p_index contains the indexes of the cut-off frequencies. Looks like
+ * something like this:
+ * 
+ *                      filter 2   
+ *                   <------------->
+ *                filter 1           filter 3
+ *             <----------->       <------------->
+ *        | | | | | | | | | | | | | | | | | | | | | ..........
+ *         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9  ..........
+ *             ^     ^     ^       ^             ^
+ *            |     |     |       |             |
+ *          idx[0]  |  idx[2]    |           idx[4]
+ *                idx[1]       idx[3]  
+ *
+ */
+int filter_bank(spsig_t *x, unsigned short nfilt, unsigned short *idx, int powerspec, int uselog, spf_t *e)
+{
+  int i, j, from, to, status;
+  double a, s, m, re, im;
+
+  if ((status = fft(x, NULL, NULL)) != 0) {
+    fprintf(stderr, "log_filter_bank(): cannot run FFT\n");
+    return(status);
+  }
+
+  for (i = 0; i < nfilt; i++) {
+    s = 0.0;
+
+    /* ascending step from=idx[i] to=idx[i+1]-1: a = 1 / (idx[i+1] - idx[i] + 1) */
+    from = *(idx+i);
+    to = *(idx+i+1);
+    a = 1.0 / (float)(to - from + 1);
+
+    for (j = from; j < to; j++) {
+
+      if (j) {
+	re = *(_fftbuf+j);
+	im = *(_fftbuf+_fftn-j);
+	m = powerspec ? (re * re + im * im) : sqrt(re * re + im * im);
+      }
+      else
+	m = powerspec ? (*_fftbuf * *_fftbuf) : fabs(*_fftbuf);
+
+      s += m * (1.0 - a * (to - j));
+    }
+
+    /* descending step from=idx[i+1] to=idx[i+2]: a = 1 / (idx[i+2] - idx[i+1] + 1) */
+    from = to;
+    to = *(idx+i+2);
+    a = 1.0 / (float)(to - from + 1);
+
+    for (j = from; j <= to; j++) {
+
+      if (j) {
+	re = *(_fftbuf+j);
+	im = *(_fftbuf+_fftn-j);
+	m = powerspec ? (re * re + im * im) : sqrt(re * re + im * im);
+      }
+      else 
+	m = powerspec ? (*_fftbuf * *_fftbuf) : fabs(*_fftbuf);
+
+      s += m * (1.0 - a * (j - from));
+    }
+
+    if (uselog)
+      *(e+i) = (s < SPRO_ENERGY_FLOOR) ? (spf_t)log(SPRO_ENERGY_FLOOR) : (spf_t)log(s);
+    else
+      *(e+i) = (s < SPRO_ENERGY_FLOOR) ? (spf_t)SPRO_ENERGY_FLOOR : (spf_t)s;
   }
 
   return(0);
@@ -645,7 +773,7 @@ void _brx(float *x, int m)
 /* ----------------------------------- */
 /*
  * perform FFT after rearrangments. 
-
+ *
  * This piece of code was kindly contributed by Pierre Duhamel and implements
  * the algorithm described in P. Duhamel and M. Vetterli, "Improved Fourier
  * and Hartley Transform Algorithms: Application to CycliC Convolution of Real

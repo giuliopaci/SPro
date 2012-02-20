@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/07/25 15:47:07 $
- * $Revision: 1.17 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  */
 
 /*
@@ -53,6 +53,18 @@
  *
  * The --info option makes it possible to only see the content of
  * the header *after* the convertions.
+ *
+ * Warning: to ensure compatibility with previous SPro 3.x format and
+ * to enable export to other formats (obviously not designed for very
+ * long streams), this piece of code is a total mess !!!!! 
+
+ * Known bug: if input stream is long enough that reading it requires
+ * several buffers, then there are some problems at the buffer
+ * boundaries when applying a transformation matrix with a splice
+ * greater than one. Correcting this is a pain in the ass, so I
+ * haven't done it yet and will probably never do unless I do have
+ * some problems with this case one day. It's the same as the
+ * referenced Buffer Boundary Bug.
  */
 
 #define _scopy_c_
@@ -60,7 +72,7 @@
 #include <spro.h>
 #include <getopt.h>
 
-static char *cvsid = "$Id: scopy.c,v 1.17 2003/07/25 15:47:07 ggravier Exp $";
+static char *cvsid = "$Id: scopy.c 146 2010-01-04 15:31:49Z guig $";
 
 /* ----------------------------------------------- */
 /* ----- global variables set by read_args() ----- */
@@ -75,6 +87,7 @@ int info = 0;                     /* show file info                           */
 int showdata = 1;                 /* show data                                */
 int swap = 0;                     /* swap byte order                          */
 size_t bufsize = 10000000;        /* I/O buffer size (in bytes)               */
+int with_header = 0;              /* output variable length header            */
 unsigned long winlen = 0;         /* normalization window length              */
 long flag = 0;                    /* feature additionnal streams              */
 int compat = 0;                   /* import from SPro 3.x                     */
@@ -99,6 +112,7 @@ void usage(void)
   fprintf(stdout, "  -B, --swap                swap byte order before writing new file (no)\n");
   fprintf(stdout, "  -o, --output-format=s     set output format (spro)\n");
   fprintf(stdout, "                            valid formats are: ascii, htk, sirocco\n");
+  fprintf(stdout, "  -H, --header              output variable length header (don't)\n");
   fprintf(stdout, "\n");
   fprintf(stdout, "  -Z, --cms                 cepstral mean normalization\n");
   fprintf(stdout, "  -R, --normalize           variance normalization\n");
@@ -136,12 +150,13 @@ static struct option longopts[] =
   {"transform", required_argument, NULL, 't'},
   {"extract", required_argument, NULL, 'x'},
   {"info", no_argument, NULL, 'i'},
-  {"supress", no_argument, NULL, 'z'},
+  {"suppress", no_argument, NULL, 'z'},
   {"start", required_argument, NULL, 's'},
   {"end", required_argument, NULL, 'e'},
   {"swap", no_argument, NULL, 'B'},
   {"output-format", required_argument, NULL, 'o'},
   {"bufsize", no_argument, NULL, 'I'},
+  {"header", no_argument, NULL, 'H'},
   {"verbose", no_argument, NULL, 'v'},
   {"version", no_argument, NULL, 'V'},
   {"help", no_argument, NULL, 'h'},
@@ -188,6 +203,7 @@ int main(int argc,char **argv)
   char *ifn, *ofn;                /* I/O filenames                            */
   FILE *f;                        /* I/O file descriptor                      */
   spfstream_t *is = NULL;         /* I/O feature streams                      */
+  spfheader_t *hdr = NULL; 
   spfbuf_t *ibuf;                 /* input stream buffer                      */
   spfbuf_t *obuf;                 /* output feature buffer                    */
   spf_t *pmem;
@@ -198,18 +214,19 @@ int main(int argc,char **argv)
 
   int read_args(int, char **);
 
-  transmat_t *read_trans_mat(const char *);
+  transmat_t * read_trans_mat(const char *);
   void free_trans_mat(transmat_t *);
 
-  spfbuf_t *import_data(char *);
+  spfheader_t * set_output_header(spfheader_t *, long);
+  spfbuf_t * import_data(char *);
   void show_input_info(spfstream_t *);
   unsigned long get_n_samples(spfstream_t *);
   unsigned short get_output_dim(unsigned short, transmat_t *);
-  FILE *init_output(const char *, unsigned long, unsigned short, long, float);
+  FILE * init_output(const char *, unsigned long, unsigned short, long, float, spfheader_t *);
   unsigned long output(spfbuf_t *, FILE *);
 
   void scale(spfbuf_t *, float);
-  spfbuf_t *transform(spfbuf_t *, transmat_t *);
+  spfbuf_t * transform(spfbuf_t *, transmat_t *);
   int extract(spfbuf_t *, char *);
   
   /* ----- process command line ----- */
@@ -260,6 +277,7 @@ int main(int argc,char **argv)
       free_trans_mat(A);
       return(SPRO_STREAM_OPEN_ERR);
     }
+
     odim = get_output_dim(ibuf->dim, A);
     nsamples = ibuf->n;
   }
@@ -287,14 +305,23 @@ int main(int argc,char **argv)
 	free_trans_mat(A); spf_stream_close(is);
       }
     }
-    else
+    else {
       nsamples = 0;
+      hdr = spf_stream_header(is);
+    }
   }
+
+  if (with_header)
+    if ((hdr = set_output_header(hdr, (compat) ? flag : is->oflag)) == NULL) {
+      fprintf(stderr, "scopy error -- cannot set output header\n");
+      if (compat) spf_buf_free(ibuf); else spf_stream_close(is); free_trans_mat(A);
+      return(SPRO_ALLOC_ERR);
+    }
 
   /* ----- print out data ----- */
   if (showdata) {
     
-    if ((f = init_output(ofn, nsamples, odim, (compat) ? flag : is->oflag, (compat) ? 100.0 : is->Fs)) == NULL) {
+    if ((f = init_output(ofn, nsamples, odim, (compat) ? flag : is->oflag, (compat) ? 100.0 : is->Fs, hdr)) == NULL) {
       fprintf(stderr, "scopy error -- cannot initialize output stream %s\n", ofn);
       if (compat) spf_buf_free(ibuf); else spf_stream_close(is); free_trans_mat(A);
       return(SPRO_STREAM_OPEN_ERR);
@@ -386,23 +413,92 @@ int main(int argc,char **argv)
   return(0);
 }
 
+/* --------------------------------------------------------------- */
+/* ----- spfheader_t *set_output_header(spfheader_t *, long) ----- */
+/* --------------------------------------------------------------- */
+/*
+ * Create output header. If a input header is given, add copy specific
+ * fields to the input header.
+ */
+spfheader_t * set_output_header(spfheader_t * ih, long flag)
+{
+  spfheader_t * oh = spf_header_init(NULL);
+  char str[2048];
+  int nfields = 0, i;
+
+  if (! oh)
+    return(NULL);
+  
+  /* copy every field of input header into output header */
+  if (ih) {
+    
+    if ((oh->field = (struct spf_header_field *)malloc(nfields * sizeof(struct spf_header_field))) == NULL) {
+      spf_header_free(oh);
+      return(NULL);
+    }
+    
+    for (i = 0; i < ih->nfields; i++) {
+      oh->field[i].name = strdup(ih->field[i].name);
+      oh->field[i].value = strdup(ih->field[i].value);
+    }
+    
+    oh->nfields = ih->nfields;
+  }
+  
+  if (winlen && (flag & WITHZ || flag & WITHR)) {
+    sprintf(str, "%lu", winlen);
+    if (spf_header_field_set(oh, "segment_length", str, 1) == -1) {
+      spf_header_free(oh);
+      return(NULL);
+    }
+  }
+
+  if (transfn)
+    if (spf_header_field_set(oh, "transform_matrix", transfn, 1) == -1) {
+      spf_header_free(oh);
+      return(NULL);
+    }
+
+  if (xptn)
+    if (spf_header_field_set(oh, "extract_pattern", xptn, 1) == -1) {
+      spf_header_free(oh);
+      return(NULL);
+    }
+
+  if (scalef) {
+    sprintf(str, "%f", scalef);
+    if (spf_header_field_set(oh, "scale", str, 1) == -1) {
+      spf_header_free(oh);
+      return(NULL);
+    }
+  }
+
+  return(oh);
+}
+
 /* ----------------------------------------------- */
 /* ----- void show_input_info(spfstream_t *) ----- */
 /* ----------------------------------------------- */
+/*
+ * Show input stream info
+ */
 void show_input_info(spfstream_t *p) 
 {
   char s[7];
-  unsigned short dim, i, idx[9];
+  unsigned short i;
 
   for (i = 0; i < p->header->nfields; i++)
     fprintf(stdout, "%s = %s\n", p->header->field[i].name, p->header->field[i].value);
   
-  fprintf(stdout, "sample_rate = %f\n", p->Fs);
-  sp_flag_to_str(p->iflag, s);
-  fprintf(stdout, "input:     dim=%-3hu (%s)\n", p->idim, (*s) ? s : "<nil>");
+  fprintf(stdout, "frame_rate = %.2f\n", p->Fs);
 
-  if (p->iflag != p->oflag)
-    fprintf(stdout, "convert:   dim=%-3hu (%s)\n", p->odim, sp_flag_to_str(p->oflag, s));
+  sp_flag_to_str(p->iflag, s);
+  fprintf(stdout, "input_dimension = %-3hu\n", p->idim);
+  fprintf(stdout, "input_qualifiers = %s\n", (*s) ? s : "<nil>");
+
+  sp_flag_to_str(p->oflag, s);
+  fprintf(stdout, "output_dimension = %-3hu\n", p->odim);
+  fprintf(stdout, "output_qualifiers = %s\n", (*s) ? s : "<nil>");
 }
 
 /* ------------------------------------------------------ */
@@ -429,13 +525,17 @@ unsigned long get_n_samples(spfstream_t *f)
   return((epos-spos) / (spf_stream_dim(f) * sizeof(spf_t)));
 }
 
-/* --------------------------------------------------------------------------------------- */
-/* ----- FILE *init_output(const char *, unsigned long, unsigned short, long, float) ----- */
-/* --------------------------------------------------------------------------------------- */
-FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, long oflag, float frate)
+/* ------------------------------------------------------------------------------------------------------ */
+/* ----- FILE *init_output(const char *, unsigned long, unsigned short, long, float, spfheader_t *) ----- */
+/* ------------------------------------------------------------------------------------------------------ */
+/*
+ * Initialize output stream. Initialization is made directly (i.e. not
+ * using SPro library routines) because of the alien format support.
+ */
+FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, long oflag, float frate, spfheader_t *vh)
 {
   FILE *f;
-  
+
   if (strcmp(ofn, "-")) {
     if ((f = fopen(ofn, "w")) == NULL)
       return(NULL);
@@ -457,9 +557,14 @@ FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, l
     swap_bytes(&_rate, 1, sizeof(float));
 #endif
   
-    if (fwrite(&_dim, SIZEOF_SHORT, 1, f) != 1 || 
-	fwrite(&_flag, SIZEOF_LONG, 1, f) != 1 || 
-	fwrite(&_rate, sizeof(float), 1, f) != 1) {
+    if (vh)
+      if (spf_header_write(vh, f) != 0) {
+	if (f != stdout) fclose(f);
+	fprintf(stderr, "scopy error -- cannot write header to file %s\n", ofn); 
+	return(NULL);
+      }
+
+    if (fwrite(&_dim, SIZEOF_SHORT, 1, f) != 1 || fwrite(&_flag, SIZEOF_LONG, 1, f) != 1 || fwrite(&_rate, sizeof(float), 1, f) != 1) {
       if (f != stdout) fclose(f);
       fprintf(stderr, "scopy error -- cannot write header to file %s\n", ofn); 
       return(NULL);
@@ -475,8 +580,6 @@ FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, l
       nsamples = en - st + 1;
     else
       nsamples -= st;
-
-    fprintf(stderr, "nsamples=%lu\n", nsamples);
 
     htkheader.nsamples = (long)nsamples;
     htkheader.size = (short)(dim * sizeof(float));
@@ -500,7 +603,6 @@ FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, l
       return(NULL);
     }
   }
-  
   else if (strcasecmp(ofmt, "sirocco") == 0) {
     short int nframes;
     unsigned char c;
@@ -521,7 +623,6 @@ FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, l
       return(NULL);
     }
   }
-
   else if (strcasecmp(ofmt, "ascii") != 0) {
     fprintf(stderr, "scopy error -- unkown output format %s\n", ofmt);
     if (f != stdout) fclose(f);
@@ -622,9 +723,10 @@ spfbuf_t *import_data(char *fn)
   }
 
   if (info) {
-    fprintf(stdout, "sample_rate = 100\n");
+    fprintf(stdout, "frame_rate = 100\n");
     sp_flag_to_str(iflag, s);
-    fprintf(stdout, "input:    dim=%-3lu (%s)\n", dim, (*s) ? s : "<nil>");
+    fprintf(stdout, "input_dimension = %-3lu\n", dim);
+    fprintf(stdout, "input_qualifiers = %s\n", (*s) ? s : "<nil>");
   }
 
   flag |= iflag;
@@ -652,7 +754,8 @@ spfbuf_t *import_data(char *fn)
 
   if (info) {
     sp_flag_to_str(flag, s);
-    fprintf(stdout, "input:     dim=%-3hu (%s)\n", buf->dim, (*s) ? s : "<nil>");
+    fprintf(stdout, "output_dimension = %-3hu\n", buf->dim);
+    fprintf(stdout, "output_qualifiers = %s\n", (*s) ? s : "<nil>");
     fflush(stdout);
   }
 
@@ -978,6 +1081,7 @@ void free_trans_mat(transmat_t *A)
  *  -s, --start=n             starting at sample number (1)
  *  -e, --end=n               ending at sample number (last)
  *  -o, --output-format=s     set output format (spro)
+ *  -H, --header              output variable length header (don't)
  *  -i, --info                print input file header information (off)
  *  -v, --verbose             verbose mode
  *  -V, --version             print version number
@@ -991,7 +1095,7 @@ int read_args(int argc, char **argv)
   opterr = 0;
   optopt = '!';
 
-  while ((c = getopt_long(argc, argv, "cZRL:DANm:t:x:s:e:BI:o:izvVh", longopts, &i)) != EOF)
+  while ((c = getopt_long(argc, argv, "cZRL:DANm:t:x:s:e:BI:o:HizvVh", longopts, &i)) != EOF)
     switch (c) {
       
     case 'c':
@@ -1074,6 +1178,10 @@ int read_args(int argc, char **argv)
       ofmt = optarg;
       break;
 
+    case 'H':
+      with_header = 1;
+      break;
+
     case 'i':
       info = 1;
       break;
@@ -1116,6 +1224,9 @@ int read_args(int argc, char **argv)
     fprintf(stderr, "scopy error -- invalid start and/or end sample (st=%ld, en=%ld)", st, en);
     return(1);
   }
+
+  if (with_header && ofmt)  /* no variable length header with alien formats */
+    with_header = 0;
 
   return(0);
 }

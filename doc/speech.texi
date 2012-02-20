@@ -4,8 +4,8 @@
 @c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
 @c
 @c $Author: ggravier $
-@c $Date: 2003/08/22 16:18:32 $
-@c $Revision: 1.2 $
+@c $Date: 2007-01-26 17:00:09 +0100 (Fri, 26 Jan 2007) $
+@c $Revision: 134 $
 @c
 
 @c >>>>> This file is included by sprodoc.texi
@@ -13,7 +13,7 @@
 @c
 @c --*-- Speech analysis --*--
 @c
-@node Speech analysis, SPro tools, Introduction, Top
+@node Speech analysis
 @chapter Speech analysis techniques
 
 This section provides a brief scientific overview of the speech signal
@@ -26,6 +26,7 @@ implemented in SPro.
 * Variable resolution::         Variable resolution spectral analysis
 * Filter-banks::                Filter-bank speech analysis
 * LPC analysis::                Linear prediction speech analysis
+* PLP analysis::                Perceptual linear prediction
 * Cepstrum::                    Cepstral analysis
 * Deltas and normalization::    Delta, acceleration and feature normalization
 @end menu
@@ -196,7 +197,7 @@ according to the desired spectral warping.
 
 @c -- Linear prediction
 
-@node LPC analysis, Cepstrum, Filter-banks, Speech analysis
+@node LPC analysis, PLP analysis, Filter-banks, Speech analysis
 @section Linear predictive analysis
 
 @cindex linear prediction coefficients
@@ -279,9 +280,34 @@ used in speech coding. Line spectrum frequencies is another
 representation derived from linear predictive analysis which is very
 popular in speech coding.
 
+@c -- PLP analysis
+
+@node PLP analysis, Cepstrum, LPC analysis, Speech analysis
+@section PLP analysis
+
+@cindex PLP
+@cindex Perceptual Linear Prediction
+
+Perceptual Linear Prediction (PLP) is combines filter-bank analysis and
+linear prediction to compute linear prediction coefficients on a
+perceptual spectrum. The filter-bank power spectrum is filtered using an
+equal loudness curve and passed through a compression function
+@tex
+$
+  f(x) = x^{1/n}  
+$
+@end tex
+@ifnottex
+  @math{f(x) = x^{1/n}}
+@end ifnottex
+where usually n=3, thus resulting in an auditory spectrum from which the
+autocorrelation is computed by inverse discrete Fourier
+transform. Linear prediction coefficients are then carried out as usual
+from the autocorrelation.
+
 @c -- Cepstrum
 
-@node Cepstrum, Deltas and normalization, LPC analysis, Speech analysis
+@node Cepstrum, Deltas and normalization, PLP analysis, Speech analysis
 @section Cepstral analysis
 
 @cindex cepstrum

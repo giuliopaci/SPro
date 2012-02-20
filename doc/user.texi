@@ -2,9 +2,9 @@
 @c
 @c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
 @c
-@c $Author: ggravier $
-@c $Date: 2003/08/22 16:18:32 $
-@c $Revision: 1.2 $
+@c $Author: guig $
+@c $Date: 2010-01-04 16:29:09 +0100 (Mon, 04 Jan 2010) $
+@c $Revision: 145 $
 @c
 
 @c >>>>> This file is included by sprodoc.texi
@@ -12,7 +12,7 @@
 @c --*-- ---------- --*--
 @c --*-- SPro tools --*--
 @c --*-- ---------- --*--
-@node SPro tools, SPro library, Speech analysis, Top
+@node SPro tools
 @chapter The SPro tools
 
 @menu
@@ -48,8 +48,10 @@ vectors to a @emph{feature stream}.
 
 Waveform streams are files which contains the signal samples, either in
 raw @acronym{PCM} format or in an encoded format to save disk
-space. Currently, SPro supports raw, mono, 16 bits/sample files as well
-as @sc{wave} and optionally @sc{sphere}@footnote{S@sc{phere} is the file
+space. Currently, SPro supports raw, mono, 16bits/sample files, as well
+as A-law or U-law compressed 8bits/sample files@footnote{U-law and A-law formats
+are used in telephony, or alternately as the standard audio format in the @sc{Sun Solaris} OS.},
+@sc{wave} files and optionally @sc{sphere}@footnote{S@sc{phere} is the file
 format used by most @acronym{NIST} tools and databases. See
 @url{http://www.nist.gov/speech} for the SPHERE package.} files.  The
 @sc{sphere} format is only supported if SPro has been compiled with the
@@ -173,7 +175,7 @@ description flag is actually a field of bits with the following meaning
 
 @item
 @ 
-@tab 5
+@tab 6
 @tab @samp{R}
 @tab variance has been normalized (always with @samp{Z})
 
@@ -228,14 +230,14 @@ I/Os:
 @item -F, --format=str
 @itemx
 Specify the input waveform file format. The format string @code{str} is
-one of @samp{PCM16}, @samp{wave} or @samp{sphere}, the latter being
-possible only if SPro was compiled with the @sc{sphere}
+one of @samp{PCM16}, @samp{ALAW}, @samp{ULAW}, @samp{wave} or @samp{sphere},
+the latter being possible only if SPro was compiled with the @sc{sphere}
 library. Argument is case insensitive. Default value is @samp{PCM16}.
 
 @item -f, --sample-rate=f
 @itemx
-Set input waveform sample rate to @code{f} Hz for @samp{PCM16} waveform
-files. This option is ignored for waveform file formats for which the
+Set input waveform sample rate to @code{f} Hz for @samp{PCM16}, @samp{ALAW} and
+@samp{ULAW} waveform files. This option is ignored for waveform file formats for which the
 sample rate is specified in the header. Default value is 8,000 Hz.
 
 @item -x, --channel=n
@@ -272,6 +274,11 @@ correct things when a sliding window is specified.}. Using a small
 output buffer size can then result in many boundary problems and it is
 recommended not to diminish the output buffer size below a couple of
 thousand frames. Default is 10 Mbytes.
+
+@item -H, --header
+@itemx
+Output extended (variable length) header in addition to the mandatory
+header.
 @end table
 
 @c -- Framing options
@@ -552,7 +559,8 @@ for linear predictive analysis of speech signals.
 @menu
 * Linear prediction coefficients::  All about @command{slpc}
 * Linear prediction cepstrum::  All about @command{slpcep}
-* LPC Options::                 @command{slpc} and @command{slpcep} options
+* PLP cepstrum::                All about @command{splp}
+* LPC Options::                 @command{slpc}, @command{slpcep} and @command{splp} options
 @end menu
 
 @c Linear prediction coefficients
@@ -579,7 +587,7 @@ differences between recordings using the @option{--scale-energy}
 option. 
 
 @c Linear prediction cepstrum
-@node Linear prediction cepstrum, LPC Options, Linear prediction coefficients, LPC analysis tools
+@node Linear prediction cepstrum, PLP cepstrum, Linear prediction coefficients, LPC analysis tools
 @unnumberedsubsubsec Linear prediction cepstrum
 @cindex @command{slpcep}
 
@@ -605,31 +613,37 @@ and of the log-energies can be appended to the feature vectors. When
 using delta features, the absolute log-energy can be suppressed using
 the @option{--no-static-energy} option.
 
+@c PLP cepstrum
+@node PLP cepstrum, LPC Options, Linear prediction cepstrum, LPC analysis tools
+@unnumberedsubsubsec PLP cepstrum
+@cindex @command{splp}
+
+Program @command{splp} takes as input a waveform and outputs cepstral
+coefficients derived from a perceptual linear prediction analysis. Note
+that, although not explicitely mentioned in the program name,
+@command{splp} does output cepstral coefficients, not linear prediction
+coefficients. The LPC order must be less than or equal to the number of
+filters in the filter-bank while the number of cepstral coefficients
+must be less than or equal to the prediction order.
+
+The log-energy is taken from the frame waveform as in the filter-bank
+tools.
+
 @c LPC Options
-@node LPC Options,  , Linear prediction cepstrum, LPC analysis tools
+@node LPC Options,  , PLP cepstrum, LPC analysis tools
 @unnumberedsubsubsec Options
 
-The following options are available for both @command{slpc} and
-@command{slpcep}.
+The following options are available for @command{slpc},
+@command{slpcep} and @command{splp}.
 @table @code
 @item -n, --order=n
 @itemx
-Specify the linear prediction analysis order. Default is 24.
+Specify the linear prediction analysis order. Default is 12.
 
 @item -a, --alpha=f             
 @itemx
 Use bilinear frequency warping and set the warping parameter @math{a}
 to @code{f}@ (@code{f} must be between 0 and 1). Default is no warping.
-
-@item -r, --parcor
-Output reflection coefficients rather than linear prediction
-coefficients.
-
-@item -g, --lar
-Output log area ratios rather than linear prediction coefficients.
-
-@item -p, --lsp
-Output line spectrum pairs rather than linear prediction coefficients.
 
 @item -e, --energy
 @itemx
@@ -643,7 +657,22 @@ the maximum energy value is computed depends on whether
 @end table
 
 @noindent
-The following options are also available for @command{slpcep}.
+The following options are specific to @command{slpc}.
+@table @code
+@item -r, --parcor
+Output reflection coefficients rather than linear prediction
+coefficients.
+
+@item -g, --lar
+Output log area ratios rather than linear prediction coefficients.
+
+@item -p, --lsp
+Output line spectrum pairs rather than linear prediction coefficients.
+@end table
+
+@noindent
+The following options are also available for @command{slpcep} and
+@command{splp}.
 @table @code
 @item -p, --num-ceps=n
 Set the number of output cepstral coefficients to @code{n}@. @code{n}
@@ -652,11 +681,16 @@ bank. Default is 12.
 
 @item -r, --lifter=n 
 Set liftering parameter @math{L} to @code{n}. Default is no liftering.
-
 @end table
 
 @noindent
-Also, @command{slpcep} supports the @option{--cms} and
+@command{splp} supports all of the options of @command{sfbank} for the
+control of the filter-bank (number of filters, bandwidth, Mel frequency
+warping, etc.). The power spectrum compression factor can be specified
+using @option{--compress}.
+
+@noindent
+Also, @command{slpcep} and @command{splp} support the @option{--cms} and
 @option{--normalize} normalization options as well as @option{--delta}
 and @option{--acceleration}. @xref{Common options}, for a description of
 these options and for additional ones.
@@ -799,8 +833,8 @@ Exporting feature streams to alien formats is also possible with
 @acronym{HTK}@footnote{@acronym{HTK} is a popular Hidden Markov Model
 Toolkit from Cambridge University, @url{http://htk.eng.cam.ac.uk}.},
 Sirocco@footnote{Sirocco is a free large vocabulary speech recognition
-search engine, @url{http://www.enst.fr/~sirocco}} and @acronym{ASCII}
-text format.
+search engine, @url{http://gforge.inria.fr/projects/sirocco}} and
+@acronym{ASCII} text format.
 
 Export to @acronym{HTK} and Sirocco file formats is only possible on
 seekable streams, i.e.@: regular files in which the C function
@@ -820,29 +854,29 @@ Networks"} in the HTK 3.2 book for details.
 Export to ASCII is useful to list in a (almost) human-readable way the
 content of a feature stream. In particular, combining the ASCII output
 with the @option{--info} option which gives information about the
-content of the stream. This option is also useful to visualize the
-different operations performed on the input feature streams and their
-order. For example, the command
+content of the input stream before possible transformation. For example,
+the command
 @example
-scopy -i -ZDA -t xxx.mat -x 1-3,7 -z foo.prm -
+scopy -zi -ZDA foo.prm -
 @end example
 @noindent
 will produce the following output
 @example
 @group
-sample_rate = 100.000000
-input:     dim=12  (<nil>)
-convert:   dim=36  (ZDA)
-transform: dim=10  (xxx.mat)
-extract:   dim=4   (1-3,7)
+frame_rate = 100.00
+input_dimension = 12
+input_qualifiers = <nil>
+output_dimension = 36
+output_qualifiers = ZDA
 @end group
 @end example
 @noindent
 In the above example, the input file dimension is 12 is then modified to
-36 by adding the dynamic coefficients (@option{-ZDA}) and further
-reduced to 10 using the linear transform in @file{xxx.mat} before being
-decimated to 4 by extracting components 1 to 3 and 7 of the resulting
-feature vectors.
+36 by adding the dynamic coefficients (@option{-ZDA}). Note that
+possible transformations (e.g. linear transform, bin extraction) are
+@emph{not} taken into account in the output dimension and
+qualifiers. For instance, @samp{scopy -zi -ZDA -x 1-3,7 foo.prm -} will
+still come up with the same output as above.
 
 As mentioned in @ref{File formats}, SPro feature files are always in
 little endian byte order. On the contrary, exported files are written in
@@ -859,13 +893,13 @@ SPro.
 @subsection Importing from a previous SPro release
 
 The option @option{--compatibility} is provided for compatibility and
-enables to read feature files from previous versions of SPro. When this
-option is used, the entire feature file is loaded into memory at once as
-this used to be the case in previous versions. Using this options with
-large files may therefore be quite memory consuming (and slow by the
-same occasion). All the processing capabilities (normalization, dynamic
-features, linear transform, etc.) remains possible when importing files
-from previous SPro versions.
+enables to read feature files from previous versions of SPro (SPro 3.*
+and before). When this option is used, the entire feature file is loaded
+into memory at once as this used to be the case in previous
+versions. Using this options with large files may therefore be quite
+memory consuming (and slow by the same occasion). All the processing
+capabilities (normalization, dynamic features, linear transform, etc.) 
+remains possible when importing files from previous SPro versions.
 
 @c -- scopy options
 @node Copy options,  , Importing from a previous SPro release, Manipulating features

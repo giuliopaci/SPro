@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/04/16 12:17:49 $
- * $Revision: 1.3 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -37,13 +37,13 @@
  * Signal I/O routines.
  *
  * Signals are input via a signal stream (sigstream_t) mechanisms in
- * order to be able to deal with very large files (I'm talking about 1
- * hour or more of 44.1 kHz stereo data). As we are mostly interested
+ * order to be able to deal with very large files (I'm talking about
+ * several hours of 44.1 kHz stereo data). As we are mostly interested
  * in getting successive frames of signal, signal streams are accessed
  * sequentially and solely input functions are provided. Several input
- * format are supported (currently raw PCM, WAVE and SPHERE).  Small
- * chunks of signals, such as frames, are stored as an array of float
- * samples in a spsig_t structures.
+ * format are supported (currently raw PCM, A-LAW, MU-LAW, WAVE and
+ * SPHERE).  Small chunks of signals, such as frames, are stored as an
+ * array of float samples in a spsig_t structures.
  *
  * A signal stream consists of some stream information (format, sample
  * rate, number of channels, ...) and an input signal buffer
@@ -52,7 +52,7 @@
  * permit to retrieve the sample rate, the latter is arbitrarily set
  * to 0 and must be changed by the user in higher level
  * functions. Some stream formats let's you know the number of samples
- * some don't. In the latter, the number of samples field of the
+ * some don't. In the last case, the number of samples field of the
  * stream is arbitrarily set to zero (but this field is not used
  * anyway).  Stream samples are read by the sig_stream_read() function
  * which returns the number of samples per channel read.
@@ -64,6 +64,9 @@
  * contrary, at the buffer level, the number of samples is the actual
  * number of samples in the buffer as the number of channels is not
  * known. I admit this is somehow confusing but that's the way it is.
+ *
+ * Many thanks to Sacha Krstulovic for implementing the support for
+ * A-law and Mu-law input formats.
  */
 
 #define _sig_c_
@@ -72,6 +75,7 @@
 #ifdef SPHERE
 # include <sp/sphere.h>
 #endif
+#include <sptables.h>  /* -> for Alaw and ulaw conversions */
 
 /* --------------------------------------------- */
 /* ----- spsig_t *sig_alloc(unsigned long) ----- */
@@ -112,14 +116,14 @@ void sig_free(spsig_t *p)
   }
 }
 
-/* ----------------------------------------------------------- */
-/* ----- sigbuf_t *sig_buf_alloc(size_t, unsigned short) ----- */
-/* ----------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/* ----- sigbuf_t *sig_buf_alloc(size_t, unsigned short, unsigned short) ----- */
+/* --------------------------------------------------------------------------- */
 /*
- * Allocate memory for a signal I/O buffer with a maximum size of nbytes bytes. Try 
- * hard to have an even number of samples to avoid complications in stereo mode.
+ * Allocate memory for a signal I/O buffer for a stream with
+ * nchannels, with a maximum size of nbytes bytes.
  */
-sigbuf_t *sig_buf_alloc(size_t nbytes, unsigned short nbps)
+sigbuf_t *sig_buf_alloc(size_t nbytes, unsigned short nbps, unsigned short nchannels)
 {
   sigbuf_t *p;
 
@@ -132,7 +136,15 @@ sigbuf_t *sig_buf_alloc(size_t nbytes, unsigned short nbps)
   }
 
   p->m = nbytes / nbps;
-  if (p->m %2)
+
+  /* The following lines assumed that nchannels \in [1,2]. So let's
+     make it more general. Thanks to Mathieu Ben for pointing this
+     out. */
+  /*
+    if (p->m % 2)
+    (p->m)--;
+  */
+  while (p->m % nchannels)
     (p->m)--;
 
   p->n = 0;
@@ -162,6 +174,12 @@ void sig_buf_free(sigbuf_t *p)
  * following format are supported:
  *
  * SPRO_SIG_PCM16_FORMAT -- single channel raw 16 bits/sample PCM
+ * (sample rate must be specified in this case)
+ *
+ * SPRO_SIG_ALAW_FORMAT -- single channel raw 8 bits/sample A-law PCM
+ * (sample rate must be specified in this case)
+ *
+ * SPRO_SIG_ULAW_FORMAT -- single channel raw 8 bits/sample Mu-law PCM
  * (sample rate must be specified in this case)
  *
  * SPRO_SIG_WAVE_FORMAT -- WAVE COMP 360 file format (so popular in
@@ -206,6 +224,14 @@ sigstream_t *sig_stream_open(const char *fn, int format, float Fs, size_t nbytes
     status = sig_pcm16_stream_init(p, name);
     break;
     
+  case SPRO_SIG_ALAW_FORMAT:    
+    status = sig_alaw_stream_init(p, name);
+    break;
+    
+  case SPRO_SIG_ULAW_FORMAT:    
+    status = sig_ulaw_stream_init(p, name);
+    break;
+    
   case SPRO_SIG_WAVE_FORMAT:
     status = sig_wave_stream_init(p, name);
     break;
@@ -230,7 +256,7 @@ sigstream_t *sig_stream_open(const char *fn, int format, float Fs, size_t nbytes
   }
   
   /* allocate buffer */
-  if ((p->buf = sig_buf_alloc(nbytes, p->nbps)) == NULL) {
+  if ((p->buf = sig_buf_alloc(nbytes, p->nbps, p->nchannels)) == NULL) {
     sig_stream_close(p);
     return(NULL);
   }
@@ -250,6 +276,8 @@ void sig_stream_close(sigstream_t *p)
 
     switch(p->format) {
     case SPRO_SIG_PCM16_FORMAT:  
+    case SPRO_SIG_ALAW_FORMAT:
+    case SPRO_SIG_ULAW_FORMAT:
     case SPRO_SIG_WAVE_FORMAT:
       if (p->f && p->name) /* if p->name == NULL, input is from stdin and we don't wanna close stdin! */
 	fclose(p->f);
@@ -282,11 +310,19 @@ void sig_stream_close(sigstream_t *p)
  */
 unsigned long sig_stream_read(sigstream_t *f)
 {
-  unsigned long nread;
+  unsigned long nread = 0;
 
   switch(f->format) {
     case SPRO_SIG_PCM16_FORMAT:  
       nread = sig_pcm16_stream_read(f);
+      break;
+
+    case SPRO_SIG_ALAW_FORMAT:  
+      nread = sig_alaw_stream_read(f);
+      break;
+
+    case SPRO_SIG_ULAW_FORMAT:  
+      nread = sig_ulaw_stream_read(f);
       break;
 
     case SPRO_SIG_WAVE_FORMAT:
@@ -348,18 +384,148 @@ int sig_pcm16_stream_init(sigstream_t *f, const char *fn)
  */
 unsigned long sig_pcm16_stream_read(sigstream_t *f)
 {
-  short *p = f->buf->s;
+  void *p = f->buf->s;
   unsigned long nread, i;
 
   nread = fread(f->buf->s, f->nbps, f->buf->m, f->f);
   
   if (f->swap)
-    for (i = 0; i < nread; i++, p++)
-      sp_swap(p+i, f->nbps);
+    for (i = 0; i < nread; i++, p += f->nbps)
+      sp_swap(p, f->nbps);
 
   f->buf->n = nread;
 
-  return(nread / f->nchannels);
+  return(nread /* / f->nchannels*/);
+}
+
+/* ------------------------------------------------------------------ */
+/* ----- int sig_alaw_stream_init(sigstream_t *, const char *) ----- */
+/* ------------------------------------------------------------------ */
+/*
+ * Initialize stream for RAW 8-bits ALAW format (do *not* allocate the buffer)
+ */
+int sig_alaw_stream_init(sigstream_t *f, const char *fn)
+{
+  if (fn) {
+    if ((f->name = strdup(fn)) == NULL) {
+      fprintf(stderr, "sig_alaw_stream_init(): cannot set stream name %s\n", fn);
+      return(SPRO_ALLOC_ERR);
+    }
+    
+    if ((f->f = fopen(fn, "rb")) == NULL) {
+      fprintf(stderr, "sig_alaw_stream_init(): cannot open file %s\n", fn);
+      return(SPRO_SIG_READ_ERR);
+    }
+  }
+  else
+    f->f = stdin;
+  
+  f->nchannels = 1;
+  f->nbps = 2;
+
+  return(0);
+}
+
+/* --------------------------------------------------------------- */
+/* ----- unsigned long sig_alaw_stream_read(sigstream_t *) ------ */
+/* --------------------------------------------------------------- */
+/* 
+ * Read and decodes samples into the buffer (of shorts) from a raw 8 bits/sample
+ * signal stream.  Return the number of samples per channel transfered into
+ * the buffer.  
+ */
+unsigned long sig_alaw_stream_read(sigstream_t *f)
+{
+  short *p = f->buf->s;
+  unsigned long nread, i;
+  unsigned char *cbuff, *cp;
+  extern short sp_alaw_exp_table[256];
+
+  /* Allocate a temporary buffer where we can read samples coded on one byte */
+  if ((cbuff = malloc( f->buf->m * sizeof(char) )) == NULL) {
+    fprintf(stderr, "sig_alaw_stream_read(): cannot allocate temporary buffer of %lu chars.\n", f->buf->m);
+    return(0);
+  }
+  
+  /* Read 1 byte samples from the file stream */
+  nread = fread(cbuff, sizeof(char), f->buf->m, f->f);
+  
+  /* Decode and copy the bytes in the buffer of shorts */
+  for (i = 0, cp = cbuff; i < nread; i++, p++, cp++)
+    *p = sp_alaw_exp_table[(*cp)];
+
+  /* if (f->swap): no swapping needed. */
+
+  f->buf->n = nread;
+
+  free(cbuff);
+
+  return(nread /* / f->nchannels */);
+}
+
+/* ------------------------------------------------------------------ */
+/* ----- int sig_ulaw_stream_init(sigstream_t *, const char *) ----- */
+/* ------------------------------------------------------------------ */
+/*
+ * Initialize stream for RAW 8-bits ULAW format (do *not* allocate the buffer)
+ */
+int sig_ulaw_stream_init(sigstream_t *f, const char *fn)
+{
+  if (fn) {
+    if ((f->name = strdup(fn)) == NULL) {
+      fprintf(stderr, "sig_ulaw_stream_init(): cannot set stream name %s\n", fn);
+      return(SPRO_ALLOC_ERR);
+    }
+    
+    if ((f->f = fopen(fn, "rb")) == NULL) {
+      fprintf(stderr, "sig_ulaw_stream_init(): cannot open file %s\n", fn);
+      return(SPRO_SIG_READ_ERR);
+    }
+  }
+  else
+    f->f = stdin;
+  
+  f->nchannels = 1;
+  f->nbps = 2;
+
+  return(0);
+}
+
+/* --------------------------------------------------------------- */
+/* ----- unsigned long sig_ulaw_stream_read(sigstream_t *) ------ */
+/* --------------------------------------------------------------- */
+/* 
+ * Read and decodes samples into the buffer (of shorts) from a raw 8 bits/sample
+ * signal stream.  Return the number of samples per channel transfered into
+ * the buffer.  
+ */
+unsigned long sig_ulaw_stream_read(sigstream_t *f)
+{
+  short *p = f->buf->s;
+  unsigned long nread, i;
+  unsigned char *cbuff, *cp;
+  extern short sp_ulaw_exp_table[256];
+
+  /* Allocate a temporary buffer where we can read samples coded on one byte */
+  if ((cbuff = malloc( f->buf->m * sizeof(char) )) == NULL) {
+    fprintf(stderr, "sig_ulaw_stream_read(): cannot allocate temporary buffer of %lu chars.\n", f->buf->m);
+    return(0);
+  }
+  
+  /* Read 1 byte samples from the file stream */
+  nread = fread(cbuff, sizeof(char), f->buf->m, f->f);
+  
+  /* Decode and copy the bytes in the buffer of shorts */
+  for (i = 0, cp = cbuff; i < nread; i++, p++, cp++)
+    *p = sp_ulaw_exp_table[(*cp)];
+  
+  /* if (f->swap): no swapping needed. */
+
+  f->buf->n = nread;
+
+  free(cbuff);
+
+  return(nread /*/ f->nchannels */);
 }
 
 /* ----------------------------------------------------------------- */
@@ -523,14 +689,14 @@ int sig_sphere_stream_init(sigstream_t *f, const char *fn)
  */
 unsigned long sig_sphere_stream_read(sigstream_t *f)
 {
-  short *p = f->buf->s;
+  void *p = f->buf->s;
   unsigned long nread, i;
 
   nread = sp_read_data(p, f->buf->m / f->nchannels, f->f);
 
   if (f->swap) 
-    for (i = 0; i < nread; i++, p++)
-      sp_swap(p+i, sizeof(short));
+    for (i = 0; i < nread; i++, p += f->nbps)
+      sp_swap(p, f->nbps);
 
   f->buf->n = nread * f->nchannels;
   
@@ -567,7 +733,7 @@ int get_next_sig_frame(sigstream_t *f, int ch, int l, int d, float a, sample_t *
   }
   else /* next calls ==> reuse l-d samples and add d new samples */
     for (i = d, j = 0; i < l; i++, j++)
-      *(s+j) = *(s+i);
+      *(s+j) = *(s+i); /* memmove should be much faster */
 
   nread = 1; /* ugly trick to get into the while loop ;) */
   p = f->buf->s + (ch - 1) * f->nbps;

@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/08/22 12:44:10 $
- * $Revision: 1.17 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -56,6 +56,10 @@
 
 #ifndef _spro_h_
 # define _spro_h_
+
+# ifdef __cplusplus
+extern "C" {
+# endif
 
 # include <system.h>
 
@@ -109,8 +113,10 @@
  */
 # define SPRO_SIG_PCM16_FORMAT 0     /* RAW (linear 16) signal format         */
 # define SPRO_SIG_WAVE_FORMAT 1      /* WAVE COMP360 signal format            */
+# define SPRO_SIG_ALAW_FORMAT 2      /* 8-bits A-law signal format            */
+# define SPRO_SIG_ULAW_FORMAT 3      /* 8-bits Mu-law signal format           */
 # ifdef SPHERE
-#  define SPRO_SIG_SPHERE_FORMAT 2   /* SHERE signal format                   */
+#  define SPRO_SIG_SPHERE_FORMAT 4   /* SHERE signal format                   */
 # endif
 
 /*
@@ -151,15 +157,12 @@ typedef struct {
 } spfbuf_t;
 
 typedef struct {
-  char *name;                   /* variable header field name                 */
-  char *value;                  /* variable header field value                */
-} spfield_t;                    /* header field                               */
-
-typedef struct {
   unsigned short nfields;       /* number of variable header fields           */
-  spfield_t *field;             /* array of attribute/value pairs             */
+  struct spf_header_field {
+    char *name;                 /* variable header field name                 */
+    char *value;                /* variable header field value                */
+  } *field;                     /* array of attribute/value pairs             */
 } spfheader_t;
-
 
 typedef struct {
   char *name;                   /* stream file name (or NULL if stdio)        */
@@ -167,7 +170,8 @@ typedef struct {
   int iomode;                   /* I/O mode                                   */
 
   spfheader_t *header;          /* variable length header                     */
-  float Fs;                     /* frame rate                                 */
+  float Fs;                     /* frame rate       
+                          */
   unsigned short idim;          /* input dimension                            */
   long iflag;                   /* input stream description                   */
   unsigned short odim;          /* output dimension                           */
@@ -233,7 +237,8 @@ void sig_free(
 /* create signal I/O buffer  */
 sigbuf_t *sig_buf_alloc(
   size_t,                       /* maximum buffer size (in bytes)             */
-  unsigned short                /* number of bytes per sample                 */
+  unsigned short,               /* number of bytes per sample                 */
+  unsigned short                /* number of channels                         */
 );
 
 /* free signal I/O buffer  */
@@ -274,6 +279,10 @@ int get_next_sig_frame(
 void sp_swap(void *, size_t);
 int sig_pcm16_stream_init(sigstream_t *, const char *);
 unsigned long sig_pcm16_stream_read(sigstream_t *);
+int sig_alaw_stream_init(sigstream_t *, const char *);
+unsigned long sig_alaw_stream_read(sigstream_t *);
+int sig_ulaw_stream_init(sigstream_t *, const char *);
+unsigned long sig_ulaw_stream_read(sigstream_t *);
 int sig_wave_stream_init(sigstream_t *, const char *);
 unsigned long sig_wave_stream_read(sigstream_t *);
 #  ifdef SPHERE
@@ -282,6 +291,7 @@ unsigned long sig_sphere_stream_read(sigstream_t *);
 #  endif /* SPHERE  */
 double getsample(void *, unsigned long, unsigned short);
 # endif /* _sig_c_  */
+
 
      /* ---------------------------------------------------  */
      /* ----- feature stream header related functions -----  */
@@ -293,7 +303,7 @@ double getsample(void *, unsigned long, unsigned short);
 
 /* initalize feature header  */
 spfheader_t *spf_header_init(
-  const spfield_t *             /* field name/value array (NULL terminated)   */
+  const struct spf_header_field * /* field name/value array (NULL terminated) */
 );
 
 /* free feature header  */
@@ -301,19 +311,32 @@ void spf_header_free(
   spfheader_t *                 /* stream header                              */
 );
 
-/* add field(s) to variable length header (do not check duplicate field
-   names)  */
-int spf_header_add(
-  spfheader_t *,                /* stream header                              */
-  const spfield_t *             /* field name/value array (NULL terminated)   */
-);
-
-/* get a variable header field from its name  */
-char *spf_header_get(
+/* get the index of a field in the header given its name, returning -1
+   if the field does not exist. */
+int spf_header_field_index(
   spfheader_t *,                /* stream header                              */
   const char *                  /* field name                                 */
 );
 
+/* get a variable header field from its name; return NULL if the field
+   is not defined  */
+char *spf_header_field_get(
+  spfheader_t *,                /* stream header                              */
+  const char *                  /* field name                                 */
+);
+
+/* set header field, changing the value if the attribute is already
+   defined; new attributes may be added; return the field index or -1
+   in case of error.  */
+int spf_header_field_set(
+  spfheader_t *,                /* stream header                              */
+  const char *,                 /* field name                                 */
+  const char *,                 /* field value                                */
+  int                           /* 1=add field, 0=do not add                  */
+);
+
+# define spf_header_field_add(p, n, v) spf_header_field_set(p, n, v, 1)
+ 
 /* read header from stream  */
 spfheader_t *spf_header_read(
   FILE *                        /* Unix stream                                */
@@ -408,7 +431,7 @@ spfstream_t *spf_output_stream_open(
   long,                         /* input feature description flag             */
   long,                         /* feature descriptors to add                 */
   float,                        /* frame sample rate in Hz                    */
-  const spfield_t *,            /* field name/value array (NULL terminated)   */
+  const struct spf_header_field *, /* NULL terminated name/value array        */
   size_t                        /* I/O buffer maximum size (in bytes)         */
 );
 
@@ -554,16 +577,8 @@ spsig_t *sig_weight(
      /* ----- feature data convertion functions -----  */
      /* ---------------------------------------------  */
 /*
- * Convertion related functions are in spro_conv.c
-  */
-
-/* add deltas  */
-int spf_add_delta(
-  spfbuf_t *,                   /* feature buffer                             */
-  unsigned short,               /* starting at coefficient index ...          */
-  unsigned short,               /* up to coefficient index (included)         */
-  unsigned short                /* writing result at index                    */
-);
+ * Convertion related functions are in convert.c
+ */
 
 /* add/remove qualifiers  */
 spfbuf_t *spf_buf_convert(
@@ -628,7 +643,7 @@ int lpc_to_lsf(
      /* ----- FFT analysis functions -----  */
      /* ----------------------------------  */
 /*
- * The FFT related functions are implemented in spro_fft.c
+ * The FFT related functions are implemented in fft.c
   */
 
 /* initialize FFT kernel, return 0 if ok.  */
@@ -661,12 +676,23 @@ unsigned short *set_mel_idx(
   float                         /* sample rate                                */
 );
 
-/* log filter bank output on variable frequency scales  */
-int log_filter_bank(
+/* generic filter bank function  */
+int filter_bank(
   spsig_t *,                    /* pointer to the input signal                */
   unsigned short,               /* number of filters                          */
   unsigned short *,             /* filter-bank indexes                        */
+  int,                          /* power or energy spectrum                   */
+  int,                          /* take log                                   */
   spf_t *                       /* pointer to output features                 */
+);
+
+# define log_filter_bank(a, b, c, d) filter_bank(a, b, c, 0, 1, d)
+
+/* set equal loudness filter for PLP analysis */
+double * set_loudness_curve(
+  unsigned short,               /* number of filters                          */
+  unsigned short *,             /* filter-bank indexes                        */
+  float                         /* sample rate                                */
 );
 
 /* initialize DCT kernel  */
@@ -691,5 +717,9 @@ float theta_inv(float, float);
 float mel(float);
 float mel_inv(float);
 # endif /* _fft_c_ */
+
+# ifdef __cplusplus
+}
+# endif
 
 #endif /* _spro_h_ */

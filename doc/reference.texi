@@ -3,15 +3,15 @@
 @c
 @c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
 @c
-@c $Author: ggravier $
-@c $Date: 2003/08/22 16:18:32 $
-@c $Revision: 1.2 $
+@c $Author: guig $
+@c $Date: 2010-01-04 16:29:09 +0100 (Mon, 04 Jan 2010) $
+@c $Revision: 145 $
 @c
 
 @c --*-- ---------------- --*--
 @c --*-- Reference guide  --*--
 @c --*-- ---------------- --*--
-@node Reference guide, Changes, SPro library, Top
+@node Reference guide
 @chapter Quick reference guide
 
 This chapter is meant as a reference guide for all the SPro tools,
@@ -25,6 +25,7 @@ version of the online help message obtained with @option{--help}.
 * sfbcep::                      @command{sfbcep} reference
 * slpc::                        @command{slpc} reference
 * slpcep::                      @command{slpcep} reference
+* splp::                        @command{splp} reference
 * scopy::                       @command{scopy} reference
 @end menu
 
@@ -52,12 +53,12 @@ Filter bank analysis of the input signal.
 @item -F, --format=str
 @itemx
 Specify the input waveform file format. Available formats are
-@samp{PCM16}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
+@samp{PCM16}, @samp{ALAW}, @samp{ULAW}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
 
 @item -f, --sample-rate=f
 @itemx
-Set input waveform sample rate to @code{f} Hz for @samp{PCM16} waveform
-files. Default: 8 kHz.
+Set input waveform sample rate to @code{f} Hz for @samp{PCM16}, @samp{ALAW} or @samp{ULAW}
+waveform files. Default: 8 kHz.
 
 @item -x, --channel=n
 @itemx
@@ -74,6 +75,10 @@ Set the input buffer size to @code{n} kbytes. Default: 10 Mb.
 @item -O, --output-bufsize=n
 @itemx
 Set the output buffer size to @code{n} kbytes. Default: 10 Mb.
+
+@item -H, --header
+@itemx
+Output variable length header.
 
 @item -k, --pre-emphasis=f
 @itemx
@@ -168,12 +173,12 @@ Filter-bank based cepstral analysis of the input signal.
 @item -F, --format=str
 @itemx
 Specify the input waveform file format. Available formats are
-@samp{PCM16}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
+@samp{PCM16}, @samp{ALAW}, @samp{ULAW}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
 
 @item -f, --sample-rate=f
 @itemx
-Set input waveform sample rate to @code{f} Hz for @samp{PCM16} waveform
-files. Default: 8 kHz.
+Set input waveform sample rate to @code{f} Hz for @samp{PCM16}, @samp{ALAW} or @samp{ULAW}
+waveform files. Default: 8 kHz.
 
 @item -x, --channel=n
 @itemx
@@ -190,6 +195,10 @@ Set the input buffer size to @code{n} kbytes. Default: 10 Mb.
 @item -O, --output-bufsize=n
 @itemx
 Set the output buffer size to @code{n} kbytes. Default: 10 Mb.
+
+@item -H, --header
+@itemx
+Output variable length header.
 
 @item -k, --pre-emphasis=f
 @itemx
@@ -317,12 +326,12 @@ Variable resolution AR modeling of the input signal.
 @item -F, --format=str
 @itemx
 Specify the input waveform file format. Available formats are
-@samp{PCM16}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
+@samp{PCM16}, @samp{ALAW}, @samp{ULAW}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
 
 @item -f, --sample-rate=f
 @itemx
-Set input waveform sample rate to @code{f} Hz for @samp{PCM16} waveform
-files. Default: 8 kHz.
+Set input waveform sample rate to @code{f} Hz for @samp{PCM16}, @samp{ALAW} or @samp{ULAW}
+waveform files. Default: 8 kHz.
 
 @item -x, --channel=n
 @itemx
@@ -339,6 +348,10 @@ Set the input buffer size to @code{n} kbytes. Default: 10 Mb.
 @item -O, --output-bufsize=n
 @itemx
 Set the output buffer size to @code{n} kbytes. Default: 10 Mb.
+
+@item -H, --header
+@itemx
+Output variable length header.
 
 @item -k, --pre-emphasis=f
 @itemx
@@ -405,7 +418,7 @@ Print version information and exit.
 
 @page
 @c -- slpcep
-@node slpcep, scopy, slpc, Reference guide
+@node slpcep, splp, slpc, Reference guide
 @section @command{slpcep}
 
 @menu
@@ -431,12 +444,12 @@ Linear prediction based cepstral analysis of the input signal.
 @item -F, --format=str
 @itemx
 Specify the input waveform file format. Available formats are
-@samp{PCM16}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
+@samp{PCM16}, @samp{ALAW}, @samp{ULAW}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
 
 @item -f, --sample-rate=f
 @itemx
-Set input waveform sample rate to @code{f} Hz for @samp{PCM16} waveform
-files. Default: 8 kHz.
+Set input waveform sample rate to @code{f} Hz for @samp{PCM16}, @samp{ALAW} or @samp{ULAW}
+waveform files. Default: 8 kHz.
 
 @item -x, --channel=n
 @itemx
@@ -453,6 +466,10 @@ Set the input buffer size to @code{n} kbytes. Default: 10 Mb.
 @item -O, --output-bufsize=n
 @itemx
 Set the output buffer size to @code{n} kbytes. Default: 10 Mb.
+
+@item -H, --header
+@itemx
+Output variable length header.
 
 @item -k, --pre-emphasis=f
 @itemx
@@ -538,8 +555,174 @@ Print version information and exit.
 @end table
 
 @page
+@c -- splp
+@node splp, scopy, slpcep, Reference guide
+@section @command{splp}
+
+@menu
+* splp usage::                  Syntax
+* splp synopsis::               Brief description
+* splp options::                Options
+@end menu
+
+@node splp usage, splp synopsis, splp, splp
+@unnumberedsubsec Usage
+
+@code{splp [options] ifile ofile}
+
+@node splp synopsis, splp options, splp usage, splp
+@unnumberedsubsec Synopsis
+
+Perceptual linear prediction based cepstral analysis of the input signal.
+
+@node splp options,  , splp synopsis, splp
+@unnumberedsubsec Options
+
+@table @code
+@item -F, --format=str
+@itemx
+Specify the input waveform file format. Available formats are
+@samp{PCM16}, @samp{ALAW}, @samp{ULAW}, @samp{wave} or @samp{sphere}. Default: @samp{PCM16}.
+
+@item -f, --sample-rate=f
+@itemx
+Set input waveform sample rate to @code{f} Hz for @samp{PCM16}, @samp{ALAW} or @samp{ULAW}
+waveform files. Default: 8 kHz.
+
+@item -x, --channel=n
+@itemx
+Set the channel to consider for feature extraction. Default: 1.
+
+@item -B, --swap
+@itemx
+Swap the input waveform samples.
+
+@item -I, --input-bufsize=n
+@itemx
+Set the input buffer size to @code{n} kbytes. Default: 10 Mb.
+
+@item -O, --output-bufsize=n
+@itemx
+Set the output buffer size to @code{n} kbytes. Default: 10 Mb.
+
+@item -H, --header
+@itemx
+Output variable length header.
+
+@item -k, --pre-emphasis=f
+@itemx
+Set the pre-emphasis coefficient to @code{f}. Default: 0.95.
+
+@item -l --length=f
+@itemx
+Set the analysis frame length to @code{f} ms. Default: 20.0 ms.
+
+@item -d, --shift=f
+@itemx
+Set the interval between two consecutive frames to @code{f} ms. Default:
+10.0 ms.
+
+@item -w, --window=str            
+@itemx
+Specify the waveform weighting window. Available windows are
+@samp{Hamming}, @samp{Hanning}, @samp{Blackman} or @samp{none}. Default:
+@samp{Hamming}.
+
+@item -n, --num-filters=n
+@itemx
+Set the number of channels in the filter bank. Default: 24.
+
+@item -a, --alpha=f             
+@itemx
+Set the bilinear frequency warping factor to @code{f}. Default: 0.
+
+@item -m, --mel                 
+@itemx
+Use M@sc{el} frequency warping. Overwrites @option{--alpha}.
+
+@item -i, --freq-min=f          
+@itemx
+Set the lower frequency bound to @code{f} Hz. Default: 0 Hz.
+
+@item -u, --freq-max=f 
+@itemx
+Set the upper frequency bound to @code{f} Hz. Default: Niquist.
+
+@item -b, --fft-length=n 
+@itemx
+Set FFT length to @code{n} samples. Default: 512.
+
+@item -c, --compress=f
+@itemx
+Set the power spectrum compression factor. Default: 3.
+ 
+@item -q, --order=n
+@itemx
+Set the prediction order. Default: 12.
+
+@item -a, --alpha=f             
+@itemx
+Set the bilinear frequency warping factor to @code{f}. Default: 0.
+
+@item -p, --num-ceps=n
+Set the number of output cepstral coefficients to @code{n}. @code{n}
+must be less or equal to the number of channels in the filter
+bank. Default: 12.
+
+@item -r, --lifter=n 
+Set liftering parameter to @code{n}. Default: 0.
+
+@item -e, --energy
+@itemx
+Add log-energy to the feature vector.
+
+@item -s, --scale-energy=f
+@itemx
+Set scale energy factor. The way the maximum energy value is computed
+depends on whether @option{--segment-length} is specified or not.
+
+@item -Z, --cms
+@itemx
+Cepstral mean subtraction. Default: no.
+
+@item -R, --normalize
+@itemx
+Variance normalization (requires @option{--cms}).  Default: no.
+
+@item -L, --segment-length=n
+@itemx
+Set normalization and energy scaling segment length. 
+
+@item -D, --delta
+@itemx
+Add first order derivatives to the feature vector.
+
+@item -A, --acceleration
+@itemx
+Add second order derivatives to the feature vector. Requires
+@option{--delta}.
+
+@item -N, --no-static-energy
+@itemx
+Remove static log-energy from feature vector (requires
+@option{--delta}).
+
+@item -v, --verbose
+@itemx 
+Turn on verbose mode
+
+@item -h, --help
+@itemx
+Print a help message for the tool and exit.
+
+@item -V, --version
+@itemx
+Print version information and exit.
+@end table
+
+@page
 @c -- scopy
-@node scopy,  , slpcep, Reference guide
+@node scopy,  , splp, Reference guide
 @section @command{scopy}
 
 @menu
@@ -597,6 +780,10 @@ byte-order.
 @itemx
 Set the output format, where @code{str} is one of @code{ascii},
 @code{htk} or @code{sirocco}. Default is the native SPro format.
+
+@item -H, --header
+@itemx
+Output variable length header.
 
 @item -R, --normalize
 @itemx

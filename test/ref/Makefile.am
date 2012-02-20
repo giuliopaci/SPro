@@ -29,12 +29,8 @@
 ## CVS log:
 ##
 ##   $Author: ggravier $
-##   $Date: 2003/07/24 15:08:18 $
-##   $Revision: 1.1 $
+##   $Date: 2007-02-01 16:33:49 +0100 (Thu, 01 Feb 2007) $
+##   $Revision: 138 $
 ##
 
-EXTRA_DIST = scopy.usage copy.1 \
-             sfbank.usage bank.1 \
-             sfbcep.usage fbcep.1 \
-             slpc.usage lpc.1 \
-             slpcep.usage lpcep.1
+EXTRA_DIST = copy.1 bank.1 fbcep.1 lpc.1 lpcep.1 plp.1

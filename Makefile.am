@@ -7,7 +7,7 @@
 ## Guig                                                    Fri Jul  5 2002 ##
 ## ----------------------------------------------------------------------- ##
 ##                                                                         ##
-##  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)               ##
+##  Copyright (C) 2002-2010 Guillaume Gravier (ggravier@irisa.fr)          ##
 ##                                                                         ##
 ##  This program is free software; you can redistribute it and/or modify   ##
 ##  it under the terms of the GNU General Public License as published by   ##
@@ -28,9 +28,9 @@
 ##
 ## CVS log:
 ##
-##   $Author: ggravier $
-##   $Date: 2003/07/25 15:43:30 $
-##   $Revision: 1.7 $
+##   $Author: guig $
+##   $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+##   $Revision: 146 $
 ##
 
 ## The foreign option disables checks for GNU specific files such as README, NEWS...
@@ -41,13 +41,13 @@ ACLOCAL_AMFLAGS = -I auxdir
 LDADD    = -lm -L. -lspro @sphere_lib@
 INCLUDES = @sphere_include@
 
-include_HEADERS = spro.h
+include_HEADERS = spro.h sptables.h
 lib_LIBRARIES = libspro.a
 noinst_HEADERS = getopt.h
 
-libspro_a_SOURCES = system.h spro.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
+libspro_a_SOURCES = system.h spro.h sptables.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
 
-bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep
+bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep splp
 noinst_PROGRAMS = scompare
 
 scopy_SOURCES = scopy.c getopt.c getopt1.c
@@ -64,6 +64,9 @@ sfbank_DEPENDENCIES = libspro.a
 
 sfbcep_SOURCES = sfbcep.c getopt.c getopt1.c
 sfbcep_DEPENDENCIES = libspro.a
+
+splp_SOURCES = splp.c getopt.c getopt1.c
+splp_DEPENDENCIES = libspro.a
 
 scompare_SOURCES = scompare.c getopt.c getopt1.c
 scompare_DEPENDENCIES = libspro.a

@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                       Fri Jul 25 2003 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 2003-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- *   $Author: ggravier $
- *   $Date: 2003/07/25 15:42:11 $
- *   $Revision: 1.1 $
+ *   $Author: guig $
+ *   $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ *   $Revision: 146 $
  *
  */
 
@@ -39,7 +39,7 @@
 
 #define _compare_c_
 
-static char *cvsid = "$Header: /udd/ggravier/dev/repository/spro/scompare.c,v 1.1 2003/07/25 15:42:11 ggravier Exp $";
+static char *cvsid = "$Header$";
 
 #include <spro.h>
 #include <getopt.h>
@@ -58,7 +58,7 @@ int trace = 0;                    /* trace level                              */
 void usage(void)
 {
   fprintf(stdout, "\nUsage:\n"); 
-  fprintf(stdout, "    scopy [options] ifn ofn\n");
+  fprintf(stdout, "    scompare [options] ifn ofn\n");
   fprintf(stdout, "\n");
   fprintf(stdout, "Synopsis:\n");
   fprintf(stdout, "    Compare input streams.\n");
@@ -72,18 +72,6 @@ void usage(void)
   fprintf(stdout, "  -h, --help                this help message\n");
   fprintf(stdout, "\n");
 }
-
-/* ----------------------------- */
-/* ----- long option array ----- */
-/* ----------------------------- */
-static struct option longopts[] = {
-  {"epsilon", required_argument, NULL, 'e'},
-  {"quiet", no_argument, NULL, 'q'},
-  {"verbose", no_argument, NULL, 'v'},
-  {"version", no_argument, NULL, 'V'},
-  {"help", no_argument, NULL, 'h'},
-  {0, 0, 0, 0}
-};
 
 /* --------------------------------- */
 /* ----- int main(int,char **) ----- */
@@ -219,6 +207,15 @@ int read_args(int argc, char **argv)
 {
   int c, i;
   char *p;
+
+  struct option longopts[] = {
+    {"epsilon", required_argument, NULL, 'e'},
+    {"quiet", no_argument, NULL, 'q'},
+    {"verbose", no_argument, NULL, 'v'},
+    {"version", no_argument, NULL, 'V'},
+    {"help", no_argument, NULL, 'h'},
+    {0, 0, 0, 0}
+  };
 
   opterr = 0;
   optopt = '!';

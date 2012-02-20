@@ -4,8 +4,8 @@
 @c Copyright (C) 2003 Guillaume Gravier (ggravier@irisa.fr)
 @c
 @c $Author: ggravier $
-@c $Date: 2003/08/22 16:18:32 $
-@c $Revision: 1.2 $
+@c $Date: 2007-01-26 17:00:09 +0100 (Fri, 26 Jan 2007) $
+@c $Revision: 134 $
 @c
 
 @c >>>>> This file is included by sprodoc.texi
@@ -176,9 +176,10 @@ kindly bothered to do the trouble-shooting. This is always appreciated.
 @cindex contributors
 
 Along the years, SPro has benefited from the help of several
-contributors. Here is a list, in alphabetical order, of the main
-contributors: Rapha@"el Blouet, Pierre Duhamel, Johnny Mariethoz, Sylvain
-Meigner, Alexey Ozerov and Jacques Prado.
+contributors. Here is a list, in alphabetical order, of those brave
+souls who contributed code to the software: Rapha@"el Blouet, Pierre
+Duhamel, Sacha Krstulovic, Johnny Mariethoz, Sylvain Meigner, Alexey
+Ozerov, Jacques Prado and Frederic Wils.
 
 @c Local Variables:
 @c ispell-local-dictionary: "american"

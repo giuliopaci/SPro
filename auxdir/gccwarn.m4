@@ -1,7 +1,7 @@
-dnl $RCSfile: gccwarn.m4,v $
+dnl $RCSfile$
 dnl $Author: ggravier $
 dnl
-dnl $Date: 2002/07/25 14:14:31 $
+dnl $Date: 2002-07-25 16:14:32 +0200 (Thu, 25 Jul 2002) $
 dnl $Revison$
 dnl
 dnl Check if the compiler supports useful warning options.  There's a few that

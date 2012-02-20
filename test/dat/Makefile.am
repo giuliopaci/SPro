@@ -29,8 +29,8 @@
 ## CVS log:
 ##
 ##   $Author: ggravier $
-##   $Date: 2003/08/22 16:17:51 $
-##   $Revision: 1.2 $
+##   $Date: 2003-08-22 18:17:51 +0200 (Fri, 22 Aug 2003) $
+##   $Revision: 122 $
 ##
 
 EXTRA_DIST = know1.lin know1.lfcc

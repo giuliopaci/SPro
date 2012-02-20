@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Nov. 2002 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 2002-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS log:
  *
- * $Author: ggravier $
- * $Date: 2003/07/25 15:47:07 $
- * $Revision: 1.2 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -68,15 +68,16 @@
 
 #include <spro.h>
 
-/* ----------------------------------------------------------- */
-/* ----- spfheader_t *spf_header_init(const spfield_t *) ----- */
-/* ----------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* ----- spfheader_t *spf_header_init(const struct spf_header_field *) ----- */
+/* ------------------------------------------------------------------------- */
 /*
  * Allocate memory and initialize the header.
  */
-spfheader_t *spf_header_init(const spfield_t *fld)
+spfheader_t *spf_header_init(const struct spf_header_field *fld)
 {
   spfheader_t *p;
+  int i, n = 0;
 
   if ((p = (spfheader_t *)malloc(sizeof(spfheader_t))) == NULL) {
     fprintf(stderr, "spf_header_init() -- cannot allocate memory\n");
@@ -86,12 +87,31 @@ spfheader_t *spf_header_init(const spfield_t *fld)
   p->nfields = 0;
   p->field = NULL;
   
-  if (fld)
-    if (spf_header_add(p, fld) == 0) {
-      fprintf(stderr, "spf_header_init() -- cannot add header field\n");
-      spf_header_free(p);
-      return(NULL);
+  if (fld) {
+    while (fld[n].name && fld[n].value)
+      n++;
+    
+    if (n) {
+      
+      /* allocate memory */
+      if ((p->field = (struct spf_header_field *)malloc(n * sizeof(struct spf_header_field))) == NULL) {
+	fprintf(stderr, "spf_header_add() -- cannot allocate memory\n");
+	return(NULL);
+      }
+      
+      for (i = 0; i < n; i++)
+	p->field[i].name = p->field[i].value = (char *)NULL;
+    
+      p->nfields = n;
+      
+      /* copy fields name and value */
+      for (i = 0; i < n; i++)
+	if ((p->field[i].name = strdup(fld[i].name)) == NULL || (p->field[i].value = strdup(fld[i].value)) == NULL) {
+	fprintf(stderr, "spf_header_add() -- cannot allocate memory\n");
+	return(NULL);
+	}
     }
+  }
 
   return(p);
 }
@@ -120,52 +140,6 @@ void spf_header_free(spfheader_t *p)
   }
 }
 
-/* ---------------------------------------------------------------- */
-/* ----- int spf_header_add(spfheader_t *, const spfield_t *) ----- */
-/* ---------------------------------------------------------------- */
-/*
- * Add some fields to the header table and return the number of fields
- * added. Return number of fields added or -1 in case of error.
- *
- * WARNING: this function does *not* check for duplicate field names!!!!!  
- */
-int spf_header_add(spfheader_t *p, const spfield_t *fld)
-{
-  spfield_t *fp;
-  int i, in, n = 0;
-
-  /* count number of fields */
-  if (fld)
-    while (fld[n].name && fld[n].value)
-      n++;
-
-  
-  if (n) {
-    in = p->nfields;
-    
-    /* reallocate memory */
-    if ((fp = (spfield_t *)realloc(p->field, (in + n) * sizeof(spfield_t))) == NULL) {
-      fprintf(stderr, "spf_header_add() -- cannot allocate memory\n");
-      return(-1);
-    }
-
-    for (i = 0; i < n; i++)
-      fp[in+i].name = fp[in+i].value = (char *)NULL;
-
-    p->field = fp;
-    p->nfields += n;
-  
-    /* copy fields name and value */
-    for (i = 0; i < n; i++)
-      if ((fp[in+i].name = strdup(fld[i].name)) == NULL || (p->field[in+i].value = strdup(fld[i].value)) == NULL) {
-	fprintf(stderr, "spf_header_add() -- cannot allocate memory\n");
-	return(-1);
-      }
-  }
-
-  return(n);
-}
-
 /* ------------------------------------------------ */
 /* ----- spfheader_t *spf_header_read(FILE *) ----- */
 /* ------------------------------------------------ */
@@ -179,7 +153,6 @@ spfheader_t *spf_header_read(FILE *f)
   int lino = 1;
   char c, line[5120], *p;
   char *name, *value;
-  int n = 0;
 
   /* create empty header */
   if ((hp = spf_header_init(NULL)) == NULL) {
@@ -260,22 +233,15 @@ spfheader_t *spf_header_read(FILE *f)
       }
       
       *p = 0;
-      n++;
-      
-      /* reallocate memory */
-      if ((hp->field = (spfield_t *)realloc(hp->field, n * sizeof(spfield_t))) == NULL) {
-	fprintf(stderr, "spf_header_read(): cannot allocate memory\n");
-	spf_header_free(hp);
-	return(NULL);
-      }
-      hp->nfields = n;
-      if ((hp->field[n-1].name = strdup(name)) == NULL || (hp->field[n-1].value = strdup(value)) == NULL) {
-	fprintf(stderr, "spf_header_read(): cannot allocate memory\n");
-	spf_header_free(hp);
-	return(NULL);
-      }
-    }
 
+
+      if (spf_header_field_add(hp, name, value) < 0) {
+	fprintf(stderr, "spf_header_read(): cannot set header field\n");
+	spf_header_free(hp);
+	return(NULL);	
+      }
+      
+    }
   }
 
   return(hp);
@@ -291,38 +257,102 @@ int spf_header_write(spfheader_t *hp, FILE *f)
 {
   unsigned short i;
 
-  if (hp->nfields) {
+  if (hp) {
+    if (hp->nfields) {
 
-    if (fprintf(f, "<header>\n") == 0)
-      return(SPRO_FEATURE_WRITE_ERR);
-
-    for (i = 0; i < hp->nfields; i++)
-      if (fprintf(f, "%s = %s\n", hp->field[i].name, hp->field[i].value) == 0)
+      if (fprintf(f, "<header>\n") == 0)
 	return(SPRO_FEATURE_WRITE_ERR);
-	
-    if (fprintf(f, "</header>\n") == 0)
-      return(SPRO_FEATURE_WRITE_ERR);
+      
+      for (i = 0; i < hp->nfields; i++)
+	if (fprintf(f, "%s = %s;\n", hp->field[i].name, hp->field[i].value) == 0)
+	  return(SPRO_FEATURE_WRITE_ERR);
+      
+      if (fprintf(f, "</header>\n") == 0)
+	return(SPRO_FEATURE_WRITE_ERR);
+    }
   }
 
   return(0);
 }
 
-/* ------------------------------------------------------------- */
-/* ----- char *spf_header_get(spfheader_t *, const char *) ----- */
-/* ------------------------------------------------------------- */
+/* ------------------------------------------------------------------- */
+/* ----- int spf_header_field_index(spfheader_t *, const char *) ----- */
+/* ------------------------------------------------------------------- */
+/*
+ * Return field index or -1 if field is not defined.
+ */
+int spf_header_field_index(spfheader_t *hp, const char *name)
+{
+  int i;
+  
+  for (i = 0; i < hp->nfields; i++)
+    if (strcmp(hp->field[i].name, name) == 0)
+      return(i);
+
+  return(-1);
+}
+
+/* ------------------------------------------------------------------- */
+/* ----- char *spf_header_field_get(spfheader_t *, const char *) ----- */
+/* ------------------------------------------------------------------- */
 /*
  * Return the header field value for specified name or NULL.
  */
-char *spf_header_get(spfheader_t *hp, const char *name)
+char *spf_header_field_get(spfheader_t *hp, const char *name)
 {
-  unsigned short i;
-  spfield_t *p = hp->field;
+  int i = spf_header_field_index(hp, name);
 
-  for (i = 0; i < hp->nfields; i++)
-    if (strcmp((p+i)->name, name) == 0)
-      return((p+i)->value);
+  if (i < 0)
+    return(NULL);
+  
+  return(hp->field[i].value);
+}
 
-  return(NULL);
+/* ---------------------------------------------------------------------------------------- */
+/* ----- int spf_header_str_field_set(spfheader_t *, const char *, const char *, int) ----- */
+/* ---------------------------------------------------------------------------------------- */
+/*
+ * Set a field in the header table. Return the index of the new field
+ * or -1 in case of error.
+ *
+ * If a field already exists, its value is replaced by the new
+ * one. Otherwise, a new entry is added unless add is set to 0, in
+ * which case -1 is returned.
+ */
+int spf_header_field_set(spfheader_t *hp, const char *name, const char *value, int add)
+{
+  int i = spf_header_field_index(hp, name);
+
+  if (i < 0) {
+
+    if (! add)
+      return(-1);
+
+    if ((hp->field = (struct spf_header_field *)realloc(hp->field, (hp->nfields + 1) * sizeof(struct spf_header_field))) == NULL) {
+      fprintf(stderr, "spf_header_field_set(): cannot allocate memory\n");
+      return(-1);
+    }
+    
+    i = hp->nfields;
+    hp->field[i].name = NULL;
+  }
+
+  /* make new entry */
+  if (! hp->field[i].name) {
+    if ((hp->field[i].name = strdup(name)) == NULL) {
+      fprintf(stderr, "spf_header_field_set(): cannot allocate memory\n");
+      return(-1);
+    }
+
+    hp->nfields += 1;
+  }
+
+  if ((hp->field[i].value = strdup(value)) == NULL) {
+    fprintf(stderr, "spf_header_field_set(): cannot allocate memory\n");
+    return(-1);
+  }
+
+  return(i);
 }
 
 #undef _header_c_

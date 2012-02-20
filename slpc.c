@@ -6,7 +6,7 @@
 /*                                                                            */
 /* Guig                                                             Apr. 1997 */
 /* -------------------------------------------------------------------------- */
-/*  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)                  */
+/*  Copyright (C) 1997-2010 Guillaume Gravier (ggravier@irisa.fr)             */
 /*                                                                            */
 /*  This program is free software; you can redistribute it and/or             */
 /*  modify it under the terms of the GNU General Public License               */
@@ -27,9 +27,9 @@
 /*
  * CVS modification log:
  *
- * $Author: ggravier $
- * $Date: 2003/08/22 12:44:10 $
- * $Revision: 1.13 $
+ * $Author: guig $
+ * $Date: 2010-01-04 16:31:49 +0100 (Mon, 04 Jan 2010) $
+ * $Revision: 146 $
  *
  */
 
@@ -42,7 +42,7 @@
 #include <spro.h>
 #include <getopt.h>
 
-static char *cvsid = "$Id: slpc.c,v 1.13 2003/08/22 12:44:10 ggravier Exp $";
+static char *cvsid = "$Id: slpc.c 146 2010-01-04 15:31:49Z guig $";
 
 #define LPC 1
 #define REFC 2
@@ -58,6 +58,7 @@ int channel = 1;                  /* channel to process                       */
 int swap = 0;                     /* change input sample byte order           */
 size_t ibs = 10000000;            /* input buffer size (in bytes)             */
 size_t obs = 10000000;            /* output buffer size (in bytes)            */
+int with_header = 0;              /* output variable length header            */
 
 float emphco = 0.95;              /* pre-emphasis coefficient                 */
 float fm_l = 20.0;                /* frame length in ms                       */
@@ -92,6 +93,7 @@ void usage(void)
   fprintf(stdout, "  -B, --swap                swap sample byte order (don't)\n");
   fprintf(stdout, "  -I, --input-bufsize=n     input buffer size in kbytes (10000)\n");
   fprintf(stdout, "  -O, --output-bufsize=n    output buffer size in kbytes (10000)\n");
+  fprintf(stdout, "  -H, --header              output variable length header (don't)\n");  
   fprintf(stdout, "\n");
   fprintf(stdout, "  -k, --pre-emphasis=f      pre-emphasis coefficient (%.2f)\n", emphco);
   fprintf(stdout, "  -l, --length=f            frame length in ms (%.1f ms)\n", fm_l);
@@ -106,7 +108,6 @@ void usage(void)
   fprintf(stdout, "\n");
   fprintf(stdout, "  -e, --energy              add log-energy (off)\n");
   fprintf(stdout, "  -s, --scale-energy=f      scale and normalize log-energy (off)\n");
-  fprintf(stdout, "\n");
   fprintf(stdout, "  -L, --segment-length=n    segment length in frames for normalization (whole data)\n");
   fprintf(stdout, "\n");
   fprintf(stdout, "  -v, --verbose             verbose mode\n");
@@ -115,45 +116,23 @@ void usage(void)
   fprintf(stdout, "\n");
 }
 
-/* ----------------------------- */
-/* ----- long option array ----- */
-/* ----------------------------- */
-static struct option longopts[] =
-{
-  {"format", required_argument, NULL, 'F'},
-  {"sample-rate", required_argument, NULL, 'f'},
-  {"channel", required_argument, NULL, 'x'},
-  {"swap", no_argument, NULL, 'B'},
-  {"input-bufsize", required_argument, NULL, 'I'},
-  {"output-bufsize", required_argument, NULL, 'O'},
-  {"pre-emphasis", required_argument, NULL, 'k'},
-  {"length", required_argument, NULL, 'l'},
-  {"shift", required_argument, NULL, 'd'},
-  {"window", required_argument, NULL, 'w'},
-  {"order", required_argument, NULL, 'n'},
-  {"alpha", required_argument, NULL, 'a'},
-  {"parcor", no_argument, NULL, 'r'},
-  {"lar", no_argument, NULL, 'g'},
-  {"lsp", no_argument, NULL, 'p'},
-  {"energy", no_argument, NULL, 'e'},
-  {"scale-energy", required_argument, NULL, 's'},
-  {"segment-length", required_argument, NULL, 'L'},
-  {"verbose", no_argument, NULL, 'v'},
-  {"version", no_argument, NULL, 'V'},
-  {"help", no_argument, NULL, 'h'},
-  {0, 0, 0, 0}
-};
-
 /* ---------------------------------- */
 /* ----- int main(int, char **) ----- */
 /* ---------------------------------- */
 int main(int argc, char **argv)
 {
   char *ifn, *ofn;                /* I/O filenames                            */
+  sigstream_t *is;
+  spfstream_t *os;
+  float frate;
+  unsigned short dim;
+  struct spf_header_field * vh = NULL;
   int status;                     /* error status                             */
 
   int read_args(int, char **);
-  int process(char *, char *);
+  struct spf_header_field * set_header(const char *);
+  void free_header(struct spf_header_field *);
+  int lpc_analysis(sigstream_t *, spfstream_t *);
 
   /* ----- process command line ----- */
   if (read_args(argc, argv))
@@ -174,38 +153,16 @@ int main(int argc, char **argv)
   }
   
   if (optind < argc) {
-    fprintf(stderr, "sflpc error -- invalid number of arguments (use --help to get usage)\n");
+    fprintf(stderr, "slpc error -- invalid number of arguments (use --help to get usage)\n");
     return(1);
   }
-  
-  /* ----- run LPC analysis ----- */
-  status = process(ifn, ofn);
-
-  return(status);
-}
-
-/* --------------------------------------- */
-/* ----- int process(char *, char *) ----- */
-/* --------------------------------------- */
-/*
- * process input file.
- */
-int process(char *ifn, char *ofn)
-{
-  sigstream_t *is;
-  spfstream_t *os;
-  float frate;
-  unsigned short dim;
-  int status;
-
-  int lpc_analysis(sigstream_t *, spfstream_t *);
   
   /* ----- show what was asked to do ----- */
   if (trace) {
     fprintf(stdout, "%s --> %s\n", ifn, ofn);
     fflush(stdout);
   }
-  
+
   /* ----- open input stream ----- */
   if ((is = sig_stream_open(ifn, format, Fs, ibs, swap)) == NULL) {
     fprintf(stderr, "slpc error -- cannot open input stream %s\n", ifn);
@@ -215,14 +172,25 @@ int process(char *ifn, char *ofn)
   /* ----- open output stream ----- */
   frate = (unsigned long)(fm_d * is->Fs / 1000.0) / is->Fs; /* real frame period */
   dim = (flag & WITHE) ? ncoeff + 1 : ncoeff;
-  if ((os = spf_output_stream_open(ofn, dim, flag & WITHE, flag, 1.0 / frate, NULL, obs)) == NULL) {
+
+  if (with_header)
+    if ((vh = set_header(ifn)) == NULL) {
+      fprintf(stderr, "slpc error -- cannot allocate memory\n");
+      sig_stream_close(is);
+      return(SPRO_ALLOC_ERR);
+    }
+
+  if ((os = spf_output_stream_open(ofn, dim, flag & WITHE, flag, 1.0 / frate, vh, obs)) == NULL) {
     fprintf(stderr, "slpc error -- cannot open output stream %s\n", ofn);
-    sig_stream_close(is);
+    sig_stream_close(is); free_header(vh);
     return(SPRO_STREAM_OPEN_ERR);
   }
-  
+
+  free_header(vh);
+
   if (winlen)
     set_stream_seg_length(os, winlen);
+
   if (escale != 0.0)
     set_stream_energy_scale(os, escale);
   
@@ -236,7 +204,7 @@ int process(char *ifn, char *ofn)
   /* ----- clean ----- */
   sig_stream_close(is);
   spf_stream_close(os);
-  
+
   return(0);
 }
 
@@ -248,9 +216,9 @@ int process(char *ifn, char *ofn)
  */
 int lpc_analysis(sigstream_t *is, spfstream_t *os)
 {
-  unsigned long l, d, j;
+  unsigned long l, d;
   float *w = NULL, *r;
-  sample_t *buf, *p;
+  sample_t *buf;
   spsig_t *s;
   spf_t *a, *k, *c = NULL;
   float sigma;
@@ -355,6 +323,113 @@ int lpc_analysis(sigstream_t *is, spfstream_t *os)
   return(0);
 }
 
+/* -------------------------------------------------------------- */
+/* ----- struct spf_header_field * set_header(const char *) ----- */
+/* -------------------------------------------------------------- */
+/*
+ * Create variable length header.
+ */
+#define MAX_NUM_HEADER_FIELDS 8
+
+struct spf_header_field * set_header(const char *ifn)
+{
+  char str[2048];
+  struct spf_header_field * p;
+  void free_header(struct spf_header_field *);
+  int i = 0;
+
+  if ((p = (struct spf_header_field *)malloc((MAX_NUM_HEADER_FIELDS + 1) * sizeof(struct spf_header_field))) == NULL)
+    return(NULL);
+
+  for (i = 0; i <= MAX_NUM_HEADER_FIELDS; i++)
+    p[i].name = p[i].value = NULL;
+
+  i = 0;
+
+  /* source file */
+  sprintf(str, "%s:%1d", ifn, channel);
+  p[i].name = strdup("source_filename"); p[i++].value = strdup(str);
+
+  /* frame stuff:_length, shift, rate and pre-emphasis */
+  sprintf(str, "%f", fm_l / 1000.0);
+  p[i].name = strdup("frame_length"); p[i++].value = strdup(str);
+
+  sprintf(str, "%f", fm_d / 1000.0);
+  p[i].name = strdup("frame_shift"); p[i++].value = strdup(str);
+
+  sprintf(str, "%f", emphco);
+  p[i].name = strdup("pre_emphasis"); p[i++].value = strdup(str);
+
+  /* analysis type */
+  switch (ctype) {
+  case LPC: sprintf(str, "lpc(%d)", ncoeff); break;
+  case REFC: sprintf(str, "refc(%d)", ncoeff); break;
+  case LAR: sprintf(str, "lar(%d)", ncoeff); break;
+  case LSP: sprintf(str, "lsp(%d)", ncoeff); break;
+  }
+  p[i].name = strdup("feature_type"); p[i++].value = strdup(str);
+
+  /* -- already in mandatory header --
+    if (flag) {
+    sp_flag_to_str(flag, str);
+    p[i].name = strdup("feature_flag"); p[i++].value = strdup(str);
+    }
+  */
+
+  /* miscellaneous parameters */
+  if (alpha != 0.0) {
+    sprintf(str, "%f", alpha);
+    p[i].name = strdup("frequency_warping"); p[i++].value = strdup(str);
+  }
+  else {
+    p[i].name = strdup("frequency_warping"); p[i++].value = strdup("linear");
+  }
+
+  if (flag & WITHE && escale != 0.0) {
+    sprintf(str, "%f", escale);
+    p[i].name = strdup("energy_scaling"); p[i++].value = strdup(str);
+
+    if (winlen) {
+      sprintf(str, "%lu", winlen);
+      p[i].name = strdup("segment_length"); p[i++].value = strdup(str);
+    }
+  }
+
+  /* check all fields were set */
+  while (i) {
+
+    i--;
+
+    if (p[i].name == NULL || p[i].value == NULL) {
+      free_header(p);
+      return(NULL);
+    }
+  }
+
+  return(p);
+}
+
+/* ------------------------------------------------------- */
+/* ----- void free_header(struct spf_header_field *) ----- */
+/* ------------------------------------------------------- */
+void free_header(struct spf_header_field *p)
+{
+  int i;
+
+  if (p) {
+
+    for (i = 0; i < MAX_NUM_HEADER_FIELDS; i++) {
+      if (p[i].name)
+	free(p[i].name);
+
+      if (p[i].value)
+	free(p[i].value);
+    }
+
+    free(p);
+  }
+}
+
 /* --------------------------------------- */
 /* ----- int read_args(int, char **) ----- */
 /* --------------------------------------- */
@@ -365,6 +440,7 @@ int lpc_analysis(sigstream_t *is, spfstream_t *os)
  *  -B, --swap                swap input stream samples
  *  -M, --input-bufsize=n     input buffer size (in bytes)
  *  -S, --output-bufsize=n    output buffer size (in bytes)
+ *  -H, --header              output variable length header (don't)
  *  -k, --pre-emphasis=f      pre-emphasis coefficient (0.95)
  *  -l, --length=f            frame length in ms (20 ms)
  *  -d, --shift=f             frame shift in ms (10 ms)
@@ -386,16 +462,46 @@ int read_args(int argc, char **argv)
   int c, i;
   char *p;
 
+  struct option longopts[] = {
+    {"format", required_argument, NULL, 'F'},
+    {"sample-rate", required_argument, NULL, 'f'},
+    {"channel", required_argument, NULL, 'x'},
+    {"swap", no_argument, NULL, 'B'},
+    {"input-bufsize", required_argument, NULL, 'I'},
+    {"output-bufsize", required_argument, NULL, 'O'},
+    {"header", no_argument, NULL, 'H'},
+    {"pre-emphasis", required_argument, NULL, 'k'},
+    {"length", required_argument, NULL, 'l'},
+    {"shift", required_argument, NULL, 'd'},
+    {"window", required_argument, NULL, 'w'},
+    {"order", required_argument, NULL, 'n'},
+    {"alpha", required_argument, NULL, 'a'},
+    {"parcor", no_argument, NULL, 'r'},
+    {"lar", no_argument, NULL, 'g'},
+    {"lsp", no_argument, NULL, 'p'},
+    {"energy", no_argument, NULL, 'e'},
+    {"scale-energy", required_argument, NULL, 's'},
+    {"segment-length", required_argument, NULL, 'L'},
+    {"verbose", no_argument, NULL, 'v'},
+    {"version", no_argument, NULL, 'V'},
+    {"help", no_argument, NULL, 'h'},
+    {0, 0, 0, 0}
+  };
+
   opterr = 0;
   optopt = '!';
 
-  while ((c = getopt_long(argc, argv, "F:f:x:BI:O:k:l:d:w:n:a:rgesp:vVh", longopts, &i)) != EOF)
+  while ((c = getopt_long(argc, argv, "F:f:x:BI:O:Hk:l:d:w:n:a:rges:L:p:vVh", longopts, &i)) != EOF)
 
     switch (c) {
       
     case 'F':
       if (strcasecmp(optarg, "pcm16") == 0)
 	format = SPRO_SIG_PCM16_FORMAT;
+      else if(strcasecmp(optarg, "alaw") == 0)
+	format = SPRO_SIG_ALAW_FORMAT;
+      else if(strcasecmp(optarg, "ulaw") == 0)
+	format = SPRO_SIG_ULAW_FORMAT;
       else if(strcasecmp(optarg, "wave") == 0)
 	format = SPRO_SIG_WAVE_FORMAT;
       else {
@@ -405,7 +511,7 @@ int read_args(int argc, char **argv)
 	else {
 #endif
 	  fprintf(stderr, "slpc error -- unknown input signal format %s with --format\n", optarg);
-	  fprintf(stderr, "                must be one of PCM16, WAVE or SPHERE.\n");
+	  fprintf(stderr, "                must be one of PCM16, ALAW, ULAW, WAVE or SPHERE.\n");
 	  return(1);
 #ifdef SPHERE
 	}
@@ -451,6 +557,10 @@ int read_args(int argc, char **argv)
 	fprintf(stderr, "slpc error -- invalid argument %s to --output-bufsize (use --help to get usage)\n", optarg);
 	return(1);
       }
+      break;
+
+    case 'H':
+      with_header = 1;
       break;
 
     case 'k':
@@ -554,9 +664,9 @@ int read_args(int argc, char **argv)
       if (p == optarg || *p != 0) {
 	fprintf(stderr, "slpc error -- invalid argument %s to --cms (use --help to get usage)\n", optarg);
 	return(1);
-      }
+	}
       break;
-      
+
     case 'v':
       trace = 1;
       break;

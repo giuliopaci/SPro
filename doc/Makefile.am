@@ -29,8 +29,8 @@
 ## CVS log:
 ##
 ##   $Author: ggravier $
-##   $Date: 2003/08/22 16:18:30 $
-##   $Revision: 1.4 $
+##   $Date: 2007-01-30 22:46:46 +0100 (Tue, 30 Jan 2007) $
+##   $Revision: 135 $
 ##
 
 MAKEINFO = @MAKEINFO@ --no-split
@@ -56,18 +56,12 @@ EXTRA_DIST = asvar-fig1.eps fbank.eps framing.eps \
 
 html: spro.html
 
-spro.html: spro.texi 
+spro.html: spro.texi changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
 	$(TEXI2HTML) $(TEXI2HTML_FLAGS) $(srcdir)/spro.texi
 
 pdf: spro.pdf
 
-postscript: spro.ps
-
 spro.pdf: spro.texi changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
 	$(TEXI2DVI) --pdf --batch $(srcdir)/spro.texi
 
-spro.ps: spro.texi changes.texi index.texi intro.texi library.texi license.texi reference.texi speech.texi user.texi version.texi
-	$(TEXI2DVI) --batch $(srcdir)/spro.texi
-	$(DVIPS) -o $(srcdir)/spro.ps $(srcdir)/spro
-
-.PHONY: html pdf postscript
+.PHONY: html pdf

@@ -7,7 +7,7 @@
 ## Guig                                                    Mon Aug  5 2002 ##
 ## ----------------------------------------------------------------------- ##
 ##                                                                         ##
-##  Copyright (C) 2002 Guillaume Gravier (ggravier@irisa.fr)               ##
+##  Copyright (C) 2002-2010 Guillaume Gravier (ggravier@irisa.fr)          ##
 ##                                                                         ##
 ##  This program is free software; you can redistribute it and/or modify   ##
 ##  it under the terms of the GNU General Public License as published by   ##
@@ -28,15 +28,15 @@
 ##
 ## CVS log:
 ##
-##   $Author: ggravier $
-##   $Date: 2003/08/22 16:17:50 $
-##   $Revision: 1.2 $
+##   $Author: guig $
+##   $Date: 2010-01-04 16:38:08 +0100 (Mon, 04 Jan 2010) $
+##   $Revision: 147 $
 ##
 
-TESTS = copy.sh bank.sh fbcep.sh lpc.sh lpcep.sh
+TESTS = copy.sh bank.sh fbcep.sh lpc.sh lpcep.sh plp.sh
 
 TESTS_ENVIRONMENT = $(SHELL)
 
 SUBDIRS = ref dat
 
-EXTRA_DIST = 
+EXTRA_DIST = copy.sh bank.sh fbcep.sh lpc.sh lpcep.sh plp.sh
