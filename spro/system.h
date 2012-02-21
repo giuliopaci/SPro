@@ -47,6 +47,7 @@
 # endif
 
 # include <stdio.h>
+# include <stdint.h>
 
 /* stdlib stuff */
 # if STDC_HEADERS
