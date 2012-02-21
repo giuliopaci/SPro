@@ -559,7 +559,7 @@ int sig_wave_stream_init(sigstream_t *f, const char *fn)
     /* (1=8 bit mono, 2=8 bit stereo or 16 bit mono, 4= 16 bit stereo)   */
     short nbitspersample;         /* number of bits/samples                  */
     char data[4];                 /* string 'data' without \0                */
-    u_int32_t datsize;        /* number of data bytes (not samples)      */
+    uint32_t datsize;        /* number of data bytes (not samples)      */
   } hdr;
 
   /* open input file */
