@@ -1,7 +1,7 @@
 Source: spro
 Section: misc
 Priority: optional
-Maintainer: Giulio Paci <g.paci@cineca.it>
+Maintainer: Giulio Paci <giuliopaci@gmail.com>
 Build-Depends: debhelper (>= 5), autotools-dev
 Standards-Version: 3.7.2
 
@@ -16,9 +16,9 @@ Description: Speech signal processing toolkit for standard feature extraction
  .
  SPro was originally designed for variable resolution spectral analysis
  but also provides for feature extraction techniques classically used in
- speech applications. There are commands for the following representations:
+ speech applications.
  .
-  * filter-bank energies
-  * cepstral coefficients
-  * linear prediction derived representation
- .
+ SPro provides the standard speech signal analysis routines. The basic
+ functions needed to build signal processing algorithms are defined in
+ a library and runtime tools are provided for the standard analysis
+ procedure (LPC, filter-bank and cepstral analysis).
