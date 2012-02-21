@@ -2,8 +2,8 @@ Source: spro
 Section: misc
 Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
-Build-Depends: debhelper (>= 5), autotools-dev
-Standards-Version: 3.7.2
+Build-Depends: debhelper (>= 7.0.50~), cdbs, autotools-dev
+Standards-Version: 3.9.2
 
 Package: spro
 Architecture: any
