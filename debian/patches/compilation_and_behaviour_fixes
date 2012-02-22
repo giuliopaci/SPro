@@ -1,0 +1,3259 @@
+Description: Compilation and behaviour fixes.
+ The patch fix several compilation issues (expecially for Windows).
+ The SPro behaviour is modified so that the files generated on a 32bit
+ or a 64bit little-endian architectures are compatible. The reading
+ behaviour of 8bit PCM and 32bit PCM files is also changed so that
+ features evaluated on those files can be compared with features
+ evaluated on 16bit PCM files (8bit and 32bit files are scaled before
+ features estimation).
+ .
+ spro (5.0-1) unstable; urgency=low
+ .
+   * New upstream release.
+Author: Giulio Paci <giuliopaci@gmail.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- spro-5.0.orig/fft.c
++++ spro-5.0/fft.c
+@@ -33,7 +33,7 @@
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+-*/
++ */
+ 
+ /*
+  * FFT signal analysis.
+@@ -53,7 +53,7 @@
+ /* ----- FFT and DCT global variables ----- */
+ /* ---------------------------------------- */
+ static float *w1c = NULL, *w3c = NULL;
+-static long *jx0 = NULL;
++static int *jx0 = NULL;
+ static unsigned long _fftn = 0;
+ static int _fftm = 0;
+ static float *_fftbuf = NULL;
+@@ -107,7 +107,7 @@ int fft_init(unsigned long npts)
+       return(SPRO_ALLOC_ERR);
+     }
+     
+-    if ((jx0 = (long *)realloc(jx0, npts * sizeof(long) / 3)) == NULL) {
++    if ((jx0 = (int *)realloc(jx0, npts * sizeof(int) / 3)) == NULL) {
+       fprintf(stderr, "[SPro error %d] FFTInit(): cannot allocate FFT kernel", SPRO_ALLOC_ERR);
+       free(_fftbuf); free(w1c); free(w3c);
+       return(SPRO_ALLOC_ERR);
+--- spro-5.0.orig/sig.c
++++ spro-5.0/sig.c
+@@ -33,7 +33,7 @@
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+-*/
++ */
+ 
+ /*
+  * Signal I/O routines.
+@@ -77,7 +77,7 @@
+ #ifdef SPHERE
+ # include <sp/sphere.h>
+ #endif
+-#include <sptables.h>  /* -> for Alaw and ulaw conversions */
++#include "spro/sptables.h"  /* -> for Alaw and ulaw conversions */
+ 
+ /* --------------------------------------------- */
+ /* ----- spsig_t *sig_alloc(unsigned long) ----- */
+@@ -256,7 +256,7 @@ sigstream_t *sig_stream_open(const char
+     sig_stream_close(p);
+     return(NULL);
+   }
+-
++  
+   /* sanity check for malformed wave files */
+   if (p->nchannels == 0 || p->nbps == 0 || p->Fs == 0.0) {
+     fprintf(stderr, "sig_stream_open(): invalid header values in input signal stream %s (wrong format?)\n", (name) ? (name) : "stdin");
+@@ -547,19 +547,19 @@ int sig_wave_stream_init(sigstream_t *f,
+ {
+   struct {
+     char riff[4];                 /* String 'RIFF' without \0                */
+-    long totsize;                 /* Total file size - 8                     */
++    int32_t totsize;                 /* Total file size - 8                     */
+     char wave[4];                 /* String 'WAVE' without \0                */
+     char fmtstr[4];               /* String 'fmt_' without \0                */
+-    long dum1;                    /* Length of format chunk (0x10)           */
++    int32_t dum1;                    /* Length of format chunk (0x10)           */
+     short dum2;                   /* Always 0x01                             */
+     short numchans;               /* Number of channels                      */
+-    long Fs;                      /* Sample rate (in Hz)                     */
+-    long nbytespersec;            /* number of bytes/seconde                 */
++    int32_t Fs;                      /* Sample rate (in Hz)                     */
++    int32_t nbytespersec;            /* number of bytes/seconde                 */
+     short nbytespersample;        /* number of bytes/sample                  */
+     /* (1=8 bit mono, 2=8 bit stereo or 16 bit mono, 4= 16 bit stereo)   */
+     short nbitspersample;         /* number of bits/samples                  */
+     char data[4];                 /* string 'data' without \0                */
+-    unsigned long datsize;        /* number of data bytes (not samples)      */
++    uint32_t datsize;        /* number of data bytes (not samples)      */
+   } hdr;
+ 
+   /* open input file */
+@@ -585,9 +585,9 @@ int sig_wave_stream_init(sigstream_t *f,
+   
+   if (f->swap) {
+     sp_swap(&(hdr.numchans), sizeof(short));
+-    sp_swap(&(hdr.Fs), sizeof(long));
++    sp_swap(&(hdr.Fs), sizeof(hdr.Fs));
+     sp_swap(&(hdr.nbytespersample), sizeof(short));
+-    sp_swap(&(hdr.datsize), sizeof(long));
++    sp_swap(&(hdr.datsize), sizeof(hdr.datsize));
+   }
+ 
+   if (strncmp(hdr.riff, "RIFF", 4) != 0 || strncmp(hdr.wave, "WAVE", 4)) {
+@@ -778,7 +778,7 @@ int get_next_sig_frame(sigstream_t *f, i
+ /* ----- double getsample(void *, unsigned long, unsigned short) ----- */
+ /* ------------------------------------------------------------------- */
+ /*
+- * Return n'th sample value assuming m bytes samples.
++ * Return n'th sample value assuming m bytes samples. The sample will be rescaled to PCM Signed 16bit range.
+  */
+ double getsample(void *p, unsigned long n, unsigned short m)
+ {
+@@ -787,12 +787,16 @@ double getsample(void *p, unsigned long
+   switch(m) {
+   case 1:
+     v = (double)(*((char *)p+n));
++    v /= 255.0;
++    v *= 32677.0;
+     break;
+   case 2:
+     v = (double)*((short *)p+n);
+     break;
+   case 4:
+     v = (double)*((long *)p+n);
++    v /= 2147483647.0;
++    v *= 32677.0;
+   default:
+     v = 0.0;
+   }
+--- spro-5.0.orig/spf.c
++++ spro-5.0/spf.c
+@@ -33,7 +33,7 @@
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+-*/
++ */
+ 
+ /*
+  * Feature related routines.
+@@ -329,7 +329,7 @@ spf_t *get_spf_buf_vec(spfbuf_t *buf, un
+  * Open input feature stream. Return a pointer to the stream or NULL
+  * in case of error.
+  */
+-spfstream_t *spf_input_stream_open(const char *fn, long flag, size_t nbytes)
++spfstream_t *spf_input_stream_open(const char *fn, int32_t flag, size_t nbytes)
+ {
+   spfstream_t *s;
+   unsigned short dim, idx[9];
+@@ -357,7 +357,7 @@ spfstream_t *spf_input_stream_open(const
+       spf_stream_close(s);
+       return(NULL);
+     }
+-    if ((s->f = fopen(fn, "r")) == NULL) {
++    if ((s->f = fopen(fn, "rb")) == NULL) {
+       fprintf(stderr, "spf_input_stream_open(): cannot open input file %s\n", fn);
+       spf_stream_close(s);
+       return(NULL);
+@@ -373,14 +373,14 @@ spfstream_t *spf_input_stream_open(const
+     return(NULL);
+   }
+   
+-  if (fread(&(s->idim), SIZEOF_SHORT, 1, s->f) != 1 || fread(&(s->iflag), SIZEOF_LONG, 1, s->f) != 1 || fread(&(s->Fs), sizeof(float), 1, s->f) != 1) {
++  if (fread(&(s->idim), SIZEOF_SHORT, 1, s->f) != 1 || fread(&(s->iflag), sizeof(int32_t), 1, s->f) != 1 || fread(&(s->Fs), sizeof(float), 1, s->f) != 1) {
+     fprintf(stderr, "spf_header_read(): cannot read fixed header\n");
+     spf_stream_close(s);
+     return(NULL);
+   }
+ #ifdef WORDS_BIGENDIAN
+   sp_swap(&(s->idim), SIZEOF_SHORT);
+-  sp_swap(&(s->iflag), SIZEOF_LONG);
++  sp_swap(&(s->iflag), sizeof(int32_t));
+   sp_swap(&(s->Fs), sizeof(float));
+ #endif
+ 
+@@ -419,12 +419,12 @@ spfstream_t *spf_input_stream_open(const
+  * Open output feature stream. Return a pointer to the stream or NULL
+  * in case of error.
+  */
+-spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, long iflag, 
+-				    long cflag, float frate, const struct spf_header_field *vh, size_t nbytes)
++spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, int32_t iflag, 
++				    int32_t cflag, float frate, const struct spf_header_field *vh, size_t nbytes)
+ {
+   spfstream_t *s;
+   unsigned short dim, idx[9];
+-  long flag;
++  int32_t flag;
+   float rate;
+ 
+   if ((s = (spfstream_t *)malloc(sizeof(spfstream_t))) == NULL) {
+@@ -483,7 +483,7 @@ spfstream_t *spf_output_stream_open(cons
+       spf_stream_close(s);
+       return(NULL);
+     }
+-    if ((s->f = fopen(fn, "w")) == NULL) {
++    if ((s->f = fopen(fn, "wb")) == NULL) {
+       fprintf(stderr, "spf_output_stream_open(): cannot open input file %s\n", fn);
+       spf_stream_close(s);
+       return(NULL);
+@@ -505,12 +505,12 @@ spfstream_t *spf_output_stream_open(cons
+   
+ #ifdef WORDS_BIGENDIAN
+   sp_swap(&dim, SIZEOF_SHORT);
+-  sp_swap(&flag, SIZEOF_LONG);
++  sp_swap(&flag, sizeof(flag));
+   sp_swap(&rate, sizeof(float));
+ #endif
+   
+   if (fwrite(&dim, SIZEOF_SHORT, 1, s->f) != 1 || 
+-      fwrite(&flag, SIZEOF_LONG, 1, s->f) != 1 || 
++      fwrite(&flag, sizeof(flag), 1, s->f) != 1 || 
+       fwrite(&rate, sizeof(float), 1, s->f) != 1) {
+     fprintf(stderr, "spf_output_stream_open() -- cannot write fixed header to %s\n", (fn) ? (fn) : "stdout"); 
+     return(NULL);
+@@ -782,9 +782,9 @@ spf_t *get_next_spf_frame(spfstream_t *s
+  * Convert a data description string to binary flag, ignoring unkown
+  * convertion letters.
+  */
+-long sp_str_to_flag(const char *str)
++int32_t sp_str_to_flag(const char *str)
+ {
+-  long flag = 0;
++  int32_t flag = 0;
+   const char *p = str;
+ 
+   if (str)
+@@ -810,7 +810,7 @@ long sp_str_to_flag(const char *str)
+ /*
+  * Transform flag to stream description string.
+  */
+-char *sp_flag_to_str(long flag, char str[7])
++char *sp_flag_to_str(int32_t flag, char str[7])
+ {
+   char *p = str;
+ 
+--- spro-5.0.orig/scopy.c
++++ spro-5.0/scopy.c
+@@ -33,7 +33,7 @@
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+-*/
++ */
+ 
+ /*
+  * Copy a data file doing the specified convertions. Also do file format
+@@ -540,7 +540,7 @@ FILE *init_output(const char *ofn, unsig
+   FILE *f;
+ 
+   if (strcmp(ofn, "-")) {
+-    if ((f = fopen(ofn, "w")) == NULL)
++    if ((f = fopen(ofn, "wb")) == NULL)
+       return(NULL);
+   }
+   else
+@@ -999,7 +999,7 @@ transmat_t *read_trans_mat(const char *f
+   FILE *f;
+   void free_trans_mat(transmat_t *);
+ 
+-  if ((f = fopen(fn, "r")) == NULL) {
++  if ((f = fopen(fn, "rb")) == NULL) {
+     fprintf(stderr, "scopy error -- cannot open transformation file %s\n", fn);
+     return(NULL);
+   }
+--- spro-5.0.orig/configure.in
++++ spro-5.0/configure.in
+@@ -38,7 +38,7 @@ AC_INIT(spro.h)
+ AC_REVISION($Revision: 151 $)
+ AC_PREREQ(2.12)
+ AC_CONFIG_AUX_DIR(auxdir)
+-AM_INIT_AUTOMAKE(spro, 5.0)
++AM_INIT_AUTOMAKE(spro, 5.0-papyrus)
+ AM_CONFIG_HEADER(config.h:config.h.in)
+ 
+ dnl Checks for usefuls programs (like a compiler, a precompiler, a linker...)
+@@ -65,6 +65,7 @@ AC_TYPE_SIZE_T
+ dnl defined sizeof standard types
+ AC_CHECK_SIZEOF(char)
+ AC_CHECK_SIZEOF(short)
++AC_CHECK_SIZEOF(int)
+ AC_CHECK_SIZEOF(long)
+ 
+ dnl Checks for header files
+--- /dev/null
++++ spro-5.0/autogen.sh
+@@ -0,0 +1,14 @@
++#! /bin/sh
++#
++# $RCSfile$
++# $Author: ggravier $
++# $Date: 2002-07-25 16:14:32 +0200(gio, 25 lug 2002) $
++# $Revision: 61 $
++#
++# Generate all necessary files by running automake, autoconf, ...
++#
++
++aclocal -Iauxdir
++autoheader
++automake -a --force-missing
++autoconf
+\ No newline at end of file
+--- spro-5.0.orig/Makefile.am
++++ spro-5.0/Makefile.am
+@@ -43,11 +43,12 @@ ACLOCAL_AMFLAGS = -I auxdir
+ LDADD    = -lm -L. -lspro @sphere_lib@
+ INCLUDES = @sphere_include@
+ 
+-include_HEADERS = spro.h sptables.h
++include_HEADERS = spro.h
+ lib_LIBRARIES = libspro.a
+ noinst_HEADERS = gggetopt.h
++pkginclude_HEADERS = spro/system.h spro/sptables.h
+ 
+-libspro_a_SOURCES = system.h spro.h sptables.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
++libspro_a_SOURCES = spro.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
+ 
+ bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep splp
+ noinst_PROGRAMS = scompare
+@@ -74,4 +75,4 @@ scompare_SOURCES = scompare.c gggetopt.c
+ scompare_DEPENDENCIES = libspro.a
+ 
+ SUBDIRS = doc auxdir test
+-EXTRA_DIST = README INSTALL COPYING CHANGES
++EXTRA_DIST = README INSTALL COPYING CHANGES autogen.sh
+--- spro-5.0.orig/sfbcep.c
++++ spro-5.0/sfbcep.c
+@@ -33,7 +33,7 @@
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+-*/
++ */
+ 
+ /*
+  * Convert speech input file to cepstral coefficients output feature file.
+@@ -526,7 +526,7 @@ int read_args(int argc, char **argv)
+     {"freq-min", required_argument, NULL, 'i'},
+     {"freq-max", required_argument, NULL, 'u'},
+     {"fft-length", required_argument, NULL, 'b'},
+-    {"num-cep", required_argument, NULL, 'p'},
++    {"num-ceps", required_argument, NULL, 'p'},
+     {"lifter", required_argument, NULL, 'r'},
+     {"energy", no_argument, NULL, 'e'},
+     {"scale-energy", required_argument, NULL, 's'},
+--- spro-5.0.orig/spro.h
++++ spro-5.0/spro.h
+@@ -33,7 +33,7 @@
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+-*/
++ */
+ 
+ /*
+  * SPro library header 
+@@ -63,7 +63,7 @@
+ extern "C" {
+ # endif
+ 
+-# include <system.h>
++# include "spro/system.h"
+ 
+      /* ----------------------- */
+      /* ----- error codes ----- */
+@@ -175,11 +175,11 @@ typedef struct {
+   float Fs;                     /* frame rate       
+                           */
+   unsigned short idim;          /* input dimension                            */
+-  long iflag;                   /* input stream description                   */
++  int32_t iflag;                   /* input stream description                   */
+   unsigned short odim;          /* output dimension                           */
+-  long oflag;                   /* output stream description                  */
++  int32_t oflag;                   /* output stream description                  */
+ 
+-  long cflag;                   /* additionnal stream description             */
++  int32_t cflag;                   /* additionnal stream description             */
+   unsigned long winlen;         /* global processing window length            */
+   float escale;                 /* energy scaling factor                      */
+ 
+@@ -422,7 +422,7 @@ extern void sp_swap(void *, size_t);
+ /* open feature stream in read mode  */
+ spfstream_t *spf_input_stream_open(
+   const char *,                 /* stream name                                */
+-  long,                         /* feature descriptors to add                 */
++  int32_t,                         /* feature descriptors to add                 */
+   size_t                        /* I/O buffer maximum size (in bytes)         */
+ );
+ 
+@@ -430,8 +430,8 @@ spfstream_t *spf_input_stream_open(
+ spfstream_t *spf_output_stream_open(
+   const char *,                 /* stream name                                */
+   unsigned short,               /* feature dimension                          */
+-  long,                         /* input feature description flag             */
+-  long,                         /* feature descriptors to add                 */
++  int32_t,                         /* input feature description flag             */
++  int32_t,                         /* feature descriptors to add                 */
+   float,                        /* frame sample rate in Hz                    */
+   const struct spf_header_field *, /* NULL terminated name/value array        */
+   size_t                        /* I/O buffer maximum size (in bytes)         */
+@@ -481,13 +481,13 @@ spf_t *get_next_spf_frame(
+ );
+ 
+ /* convert a feature stream description string to binary flag  */
+-long sp_str_to_flag(
++int32_t sp_str_to_flag(
+   const char *                  /* data description string                    */
+ );
+ 
+ /* convert a feature stream description flag to string  */
+ char *sp_flag_to_str(
+-  long,                         /* feature stream description                 */
++  int32_t,                         /* feature stream description                 */
+   char [7]                      /* output string                              */
+ );
+ 
+--- /dev/null
++++ spro-5.0/doc/sig2.eps
+@@ -0,0 +1,1277 @@
++%!PS-Adobe-2.0 EPSF-2.0
++%%Title: sig2.eps
++%%Creator: gnuplot 3.7 patchlevel 1
++%%CreationDate: Mon Jul 28 10:23:42 2003
++%%DocumentFonts: (atend)
++%%BoundingBox: 50 50 410 302
++%%Orientation: Portrait
++%%EndComments
++/gnudict 256 dict def
++gnudict begin
++/Color false def
++/Solid true def
++/gnulinewidth 5.000 def
++/userlinewidth gnulinewidth def
++/vshift -46 def
++/dl {10 mul} def
++/hpt_ 31.5 def
++/vpt_ 31.5 def
++/hpt hpt_ def
++/vpt vpt_ def
++/M {moveto} bind def
++/L {lineto} bind def
++/R {rmoveto} bind def
++/V {rlineto} bind def
++/vpt2 vpt 2 mul def
++/hpt2 hpt 2 mul def
++/Lshow { currentpoint stroke M
++  0 vshift R show } def
++/Rshow { currentpoint stroke M
++  dup stringwidth pop neg vshift R show } def
++/Cshow { currentpoint stroke M
++  dup stringwidth pop -2 div vshift R show } def
++/UP { dup vpt_ mul /vpt exch def hpt_ mul /hpt exch def
++  /hpt2 hpt 2 mul def /vpt2 vpt 2 mul def } def
++/DL { Color {setrgbcolor Solid {pop []} if 0 setdash }
++ {pop pop pop Solid {pop []} if 0 setdash} ifelse } def
++/BL { stroke userlinewidth 2 mul setlinewidth } def
++/AL { stroke userlinewidth 2 div setlinewidth } def
++/UL { dup gnulinewidth mul /userlinewidth exch def
++      10 mul /udl exch def } def
++/PL { stroke userlinewidth setlinewidth } def
++/LTb { BL [] 0 0 0 DL } def
++/LTa { AL [1 udl mul 2 udl mul] 0 setdash 0 0 0 setrgbcolor } def
++/LT0 { PL [] 1 0 0 DL } def
++/LT1 { PL [4 dl 2 dl] 0 1 0 DL } def
++/LT2 { PL [2 dl 3 dl] 0 0 1 DL } def
++/LT3 { PL [1 dl 1.5 dl] 1 0 1 DL } def
++/LT4 { PL [5 dl 2 dl 1 dl 2 dl] 0 1 1 DL } def
++/LT5 { PL [4 dl 3 dl 1 dl 3 dl] 1 1 0 DL } def
++/LT6 { PL [2 dl 2 dl 2 dl 4 dl] 0 0 0 DL } def
++/LT7 { PL [2 dl 2 dl 2 dl 2 dl 2 dl 4 dl] 1 0.3 0 DL } def
++/LT8 { PL [2 dl 2 dl 2 dl 2 dl 2 dl 2 dl 2 dl 4 dl] 0.5 0.5 0.5 DL } def
++/Pnt { stroke [] 0 setdash
++   gsave 1 setlinecap M 0 0 V stroke grestore } def
++/Dia { stroke [] 0 setdash 2 copy vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath stroke
++  Pnt } def
++/Pls { stroke [] 0 setdash vpt sub M 0 vpt2 V
++  currentpoint stroke M
++  hpt neg vpt neg R hpt2 0 V stroke
++  } def
++/Box { stroke [] 0 setdash 2 copy exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V closepath stroke
++  Pnt } def
++/Crs { stroke [] 0 setdash exch hpt sub exch vpt add M
++  hpt2 vpt2 neg V currentpoint stroke M
++  hpt2 neg 0 R hpt2 vpt2 V stroke } def
++/TriU { stroke [] 0 setdash 2 copy vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath stroke
++  Pnt  } def
++/Star { 2 copy Pls Crs } def
++/BoxF { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V  hpt2 0 V  0 vpt2 V
++  hpt2 neg 0 V  closepath fill } def
++/TriUF { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath fill } def
++/TriD { stroke [] 0 setdash 2 copy vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath stroke
++  Pnt  } def
++/TriDF { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath fill} def
++/DiaF { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath fill } def
++/Pent { stroke [] 0 setdash 2 copy gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath stroke grestore Pnt } def
++/PentF { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath fill grestore } def
++/Circle { stroke [] 0 setdash 2 copy
++  hpt 0 360 arc stroke Pnt } def
++/CircleF { stroke [] 0 setdash hpt 0 360 arc fill } def
++/C0 { BL [] 0 setdash 2 copy moveto vpt 90 450  arc } bind def
++/C1 { BL [] 0 setdash 2 copy        moveto
++       2 copy  vpt 0 90 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C2 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 90 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C3 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C4 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 180 270 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C5 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 90 arc
++       2 copy moveto
++       2 copy  vpt 180 270 arc closepath fill
++               vpt 0 360 arc } bind def
++/C6 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 90 270 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C7 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 0 270 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C8 { BL [] 0 setdash 2 copy moveto
++      2 copy vpt 270 360 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C9 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 270 450 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C10 { BL [] 0 setdash 2 copy 2 copy moveto vpt 270 360 arc closepath fill
++       2 copy moveto
++       2 copy vpt 90 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C11 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 180 arc closepath fill
++       2 copy moveto
++       2 copy  vpt 270 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C12 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 180 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C13 { BL [] 0 setdash  2 copy moveto
++       2 copy  vpt 0 90 arc closepath fill
++       2 copy moveto
++       2 copy  vpt 180 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C14 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 90 360 arc closepath fill
++               vpt 0 360 arc } bind def
++/C15 { BL [] 0 setdash 2 copy vpt 0 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/Rec   { newpath 4 2 roll moveto 1 index 0 rlineto 0 exch rlineto
++       neg 0 rlineto closepath } bind def
++/Square { dup Rec } bind def
++/Bsquare { vpt sub exch vpt sub exch vpt2 Square } bind def
++/S0 { BL [] 0 setdash 2 copy moveto 0 vpt rlineto BL Bsquare } bind def
++/S1 { BL [] 0 setdash 2 copy vpt Square fill Bsquare } bind def
++/S2 { BL [] 0 setdash 2 copy exch vpt sub exch vpt Square fill Bsquare } bind def
++/S3 { BL [] 0 setdash 2 copy exch vpt sub exch vpt2 vpt Rec fill Bsquare } bind def
++/S4 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt Square fill Bsquare } bind def
++/S5 { BL [] 0 setdash 2 copy 2 copy vpt Square fill
++       exch vpt sub exch vpt sub vpt Square fill Bsquare } bind def
++/S6 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt vpt2 Rec fill Bsquare } bind def
++/S7 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt vpt2 Rec fill
++       2 copy vpt Square fill
++       Bsquare } bind def
++/S8 { BL [] 0 setdash 2 copy vpt sub vpt Square fill Bsquare } bind def
++/S9 { BL [] 0 setdash 2 copy vpt sub vpt vpt2 Rec fill Bsquare } bind def
++/S10 { BL [] 0 setdash 2 copy vpt sub vpt Square fill 2 copy exch vpt sub exch vpt Square fill
++       Bsquare } bind def
++/S11 { BL [] 0 setdash 2 copy vpt sub vpt Square fill 2 copy exch vpt sub exch vpt2 vpt Rec fill
++       Bsquare } bind def
++/S12 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill Bsquare } bind def
++/S13 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill
++       2 copy vpt Square fill Bsquare } bind def
++/S14 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill
++       2 copy exch vpt sub exch vpt Square fill Bsquare } bind def
++/S15 { BL [] 0 setdash 2 copy Bsquare fill Bsquare } bind def
++/D0 { gsave translate 45 rotate 0 0 S0 stroke grestore } bind def
++/D1 { gsave translate 45 rotate 0 0 S1 stroke grestore } bind def
++/D2 { gsave translate 45 rotate 0 0 S2 stroke grestore } bind def
++/D3 { gsave translate 45 rotate 0 0 S3 stroke grestore } bind def
++/D4 { gsave translate 45 rotate 0 0 S4 stroke grestore } bind def
++/D5 { gsave translate 45 rotate 0 0 S5 stroke grestore } bind def
++/D6 { gsave translate 45 rotate 0 0 S6 stroke grestore } bind def
++/D7 { gsave translate 45 rotate 0 0 S7 stroke grestore } bind def
++/D8 { gsave translate 45 rotate 0 0 S8 stroke grestore } bind def
++/D9 { gsave translate 45 rotate 0 0 S9 stroke grestore } bind def
++/D10 { gsave translate 45 rotate 0 0 S10 stroke grestore } bind def
++/D11 { gsave translate 45 rotate 0 0 S11 stroke grestore } bind def
++/D12 { gsave translate 45 rotate 0 0 S12 stroke grestore } bind def
++/D13 { gsave translate 45 rotate 0 0 S13 stroke grestore } bind def
++/D14 { gsave translate 45 rotate 0 0 S14 stroke grestore } bind def
++/D15 { gsave translate 45 rotate 0 0 S15 stroke grestore } bind def
++/DiaE { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath stroke } def
++/BoxE { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V closepath stroke } def
++/TriUE { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath stroke } def
++/TriDE { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath stroke } def
++/PentE { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath stroke grestore } def
++/CircE { stroke [] 0 setdash 
++  hpt 0 360 arc stroke } def
++/Opaque { gsave closepath 1 setgray fill grestore 0 setgray closepath } def
++/DiaW { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V Opaque stroke } def
++/BoxW { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V Opaque stroke } def
++/TriUW { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V Opaque stroke } def
++/TriDW { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V Opaque stroke } def
++/PentW { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  Opaque stroke grestore } def
++/CircW { stroke [] 0 setdash 
++  hpt 0 360 arc Opaque stroke } def
++/BoxFill { gsave Rec 1 setgray fill grestore } def
++/MFshow {{dup dup 0 get findfont exch 1 get scalefont setfont
++     [ currentpoint ] exch dup 2 get 0 exch rmoveto dup dup 5 get exch 4 get
++     {show} {stringwidth pop 0 rmoveto}ifelse dup 3 get
++     {2 get neg 0 exch rmoveto pop} {pop aload pop moveto}ifelse} forall} bind def
++/MFwidth {0 exch {dup 3 get{dup dup 0 get findfont exch 1 get scalefont setfont
++      5 get stringwidth pop add}
++    {pop} ifelse} forall} bind def
++/MLshow { currentpoint stroke M
++  0 exch R MFshow } bind def
++/MRshow { currentpoint stroke M
++  exch dup MFwidth neg 3 -1 roll R MFshow } def
++/MCshow { currentpoint stroke M
++  exch dup MFwidth -2 div 3 -1 roll R MFshow } def
++end
++%%EndProlog
++gnudict begin
++gsave
++50 50 translate
++0.050 0.050 scale
++0 setgray
++newpath
++(Helvetica) findfont 140 scalefont setfont
++1.000 UL
++LTb
++3.000 UL
++LT0
++238 2477 M
++8 0 V
++9 -4 V
++8 4 V
++9 -4 V
++8 0 V
++8 0 V
++9 0 V
++8 -3 V
++9 3 V
++8 -7 V
++8 7 V
++9 0 V
++8 0 V
++9 0 V
++8 0 V
++8 0 V
++9 -3 V
++8 -4 V
++9 0 V
++8 0 V
++9 0 V
++8 0 V
++8 0 V
++9 0 V
++8 0 V
++9 0 V
++8 0 V
++8 0 V
++9 0 V
++8 -3 V
++9 0 V
++8 -4 V
++8 4 V
++9 -11 V
++8 3 V
++9 4 V
++8 0 V
++8 -7 V
++9 3 V
++8 -3 V
++9 3 V
++8 -3 V
++8 0 V
++9 0 V
++8 0 V
++9 -7 V
++8 -4 V
++8 11 V
++9 -17 V
++8 13 V
++9 -22 V
++8 26 V
++8 -28 V
++9 24 V
++8 -20 V
++9 13 V
++8 -8 V
++8 0 V
++9 8 V
++8 -15 V
++9 15 V
++8 -20 V
++9 20 V
++8 -15 V
++8 0 V
++9 7 V
++8 -18 V
++9 18 V
++8 -23 V
++8 16 V
++9 -14 V
++8 0 V
++9 12 V
++8 -36 V
++8 57 V
++9 -88 V
++8 98 V
++9 15 V
++8 -215 V
++8 242 V
++9 93 V
++8 -200 V
++9 -55 V
++8 15 V
++8 -4 V
++9 -7 V
++8 83 V
++9 -58 V
++8 11 V
++8 70 V
++9 -4 V
++8 22 V
++9 7 V
++8 -4 V
++8 -38 V
++9 10 V
++8 7 V
++9 -28 V
++8 16 V
++8 -43 V
++9 -22 V
++8 0 V
++9 -18 V
++8 78 V
++9 -109 V
++8 -43 V
++8 228 V
++9 36 V
++8 -314 V
++9 -54 V
++8 -14 V
++8 280 V
++9 249 V
++8 -629 V
++9 -208 V
++8 455 V
++8 133 V
++9 130 V
++8 47 V
++9 -182 V
++8 -121 V
++8 16 V
++9 255 V
++8 89 V
++9 -118 V
++8 -263 V
++8 -327 V
++9 -28 V
++8 165 V
++9 424 V
++8 384 V
++8 0 V
++9 29 V
++8 -122 V
++9 -86 V
++8 -86 V
++8 -339 V
++9 -204 V
++8 -101 V
++9 -122 V
++8 58 V
++9 64 V
++8 -93 V
++8 57 V
++9 65 V
++8 43 V
++9 129 V
++8 0 V
++8 0 V
++9 163 V
++8 77 V
++9 -95 V
++8 -159 V
++8 -187 V
++9 115 V
++8 482 V
++9 32 V
++8 -500 V
++8 -638 V
++9 359 V
++8 1403 V
++9 244 V
++8 -244 V
++8 244 V
++9 -172 V
++8 458 V
++9 172 V
++8 -1365 V
++8 -912 V
++9 -359 V
++8 -172 V
++9 416 V
++8 -72 V
++8 -344 V
++9 617 V
++8 790 V
++9 204 V
++8 94 V
++8 -298 V
++9 -50 V
++8 168 V
++9 -284 V
++8 -90 V
++9 -391 V
++8 -416 V
++8 301 V
++9 -86 V
++8 -215 V
++9 187 V
++8 172 V
++8 469 V
++9 122 V
++8 -792 V
++9 172 V
++8 1618 V
++8 230 V
++9 -344 V
++8 344 V
++9 -230 V
++8 459 V
++8 229 V
++9 -1851 V
++8 -899 V
++9 329 V
++8 -57 V
++8 201 V
++9 -287 V
++8 -416 V
++9 997 V
++8 708 V
++8 -180 V
++9 129 V
++8 -71 V
++9 57 V
++8 151 V
++8 -780 V
++9 -509 V
++8 172 V
++9 143 V
++8 371 V
++9 -399 V
++8 -731 V
++8 559 V
++9 462 V
++8 155 V
++9 159 V
++8 -454 V
++8 -294 V
++9 380 V
++8 1325 V
++9 344 V
++8 -760 V
++8 702 V
++9 230 V
++8 -172 V
++9 0 V
++8 -1629 V
++8 -649 V
++9 882 V
++8 -481 V
++9 -931 V
++8 -172 V
++8 286 V
++9 997 V
++8 344 V
++9 -301 V
++8 457 V
++8 208 V
++9 -194 V
++8 -133 V
++9 -496 V
++8 14 V
++8 314 V
++9 -593 V
++8 -273 V
++9 187 V
++8 -86 V
++8 344 V
++9 122 V
++8 57 V
++9 572 V
++8 -162 V
++9 -467 V
++8 339 V
++8 1501 V
++9 373 V
++8 -946 V
++9 802 V
++8 373 V
++8 -373 V
++9 -286 V
++8 -1640 V
++9 -14 V
++8 722 V
++8 -1289 V
++9 -759 V
++8 286 V
++9 344 V
++8 757 V
++8 -104 V
++9 0 V
++8 708 V
++9 -165 V
++8 -348 V
++8 -34 V
++9 0 V
++8 192 V
++9 -676 V
++8 -674 V
++8 588 V
++9 57 V
++8 -415 V
++9 114 V
++8 387 V
++8 526 V
++9 136 V
++8 -468 V
++9 -72 V
++8 801 V
++8 1470 V
++9 -488 V
++8 -673 V
++9 1505 V
++8 -115 V
++9 -545 V
++8 -458 V
++8 -1078 V
++9 906 V
++8 -445 V
++9 -1847 V
++8 344 V
++8 272 V
++9 143 V
++8 251 V
++9 -279 V
++8 761 V
++8 327 V
++9 -506 V
++8 201 V
++9 197 V
++8 -115 V
++8 -428 V
++9 -710 V
++8 215 V
++9 380 V
++8 -709 V
++8 -172 V
++9 473 V
++8 380 V
++9 295 V
++8 -295 V
++8 -29 V
++9 211 V
++8 956 V
++9 931 V
++8 -845 V
++8 444 V
++9 889 V
++8 -774 V
++9 -58 V
++8 -702 V
++9 -143 V
++8 387 V
++8 -1533 V
++9 -530 V
++8 358 V
++9 -186 V
++8 301 V
++8 -201 V
++9 230 V
++8 790 V
++9 -121 V
++8 8 V
++8 174 V
++9 43 V
++8 57 V
++9 -571 V
++8 -180 V
++8 312 V
++9 -340 V
++8 -373 V
++9 29 V
++8 258 V
++8 441 V
++9 62 V
++8 75 V
++9 201 V
++8 -75 V
++8 642 V
++9 587 V
++8 -501 V
++9 329 V
++8 287 V
++8 -459 V
++9 0 V
++8 -623 V
++9 -158 V
++8 194 V
++8 -837 V
++9 -280 V
++8 -29 V
++9 -143 V
++8 229 V
++9 -172 V
++8 29 V
++8 287 V
++9 0 V
++8 122 V
++9 43 V
++8 -15 V
++8 169 V
++9 -43 V
++8 -25 V
++9 118 V
++8 -57 V
++8 102 V
++9 134 V
++8 -29 V
++9 149 V
++currentpoint stroke M
++8 97 V
++8 29 V
++9 122 V
++8 28 V
++9 0 V
++8 86 V
++8 -114 V
++9 -22 V
++8 -14 V
++9 -115 V
++8 -57 V
++8 -61 V
++9 -95 V
++8 -76 V
++9 -100 V
++8 -50 V
++8 -29 V
++9 -46 V
++8 -43 V
++9 -29 V
++8 -14 V
++9 -15 V
++8 -14 V
++8 0 V
++9 14 V
++8 15 V
++9 14 V
++8 14 V
++8 0 V
++9 43 V
++8 61 V
++9 7 V
++8 36 V
++8 43 V
++9 38 V
++8 46 V
++9 16 V
++8 26 V
++8 52 V
++9 14 V
++8 -20 V
++9 20 V
++8 43 V
++8 14 V
++9 8 V
++8 14 V
++9 39 V
++8 43 V
++8 -28 V
++9 -29 V
++8 14 V
++9 -14 V
++8 -47 V
++8 -64 V
++9 -66 V
++8 -67 V
++9 -73 V
++8 -79 V
++8 -61 V
++9 -57 V
++8 -43 V
++9 -29 V
++8 -43 V
++9 -22 V
++8 36 V
++8 29 V
++9 0 V
++8 29 V
++9 43 V
++8 43 V
++8 57 V
++9 18 V
++8 57 V
++9 63 V
++8 22 V
++8 7 V
++9 35 V
++8 67 V
++9 27 V
++8 43 V
++8 75 V
++9 57 V
++8 43 V
++9 15 V
++8 -29 V
++8 29 V
++9 14 V
++8 -43 V
++9 -72 V
++8 -61 V
++8 -80 V
++9 -75 V
++8 -85 V
++9 -88 V
++8 -68 V
++8 -71 V
++9 -43 V
++8 -58 V
++9 -36 V
++8 0 V
++8 -28 V
++9 0 V
++8 28 V
++9 51 V
++8 43 V
++9 57 V
++8 29 V
++8 75 V
++9 72 V
++8 41 V
++9 21 V
++8 42 V
++8 60 V
++9 42 V
++8 43 V
++9 89 V
++8 43 V
++8 29 V
++9 14 V
++8 29 V
++9 -14 V
++8 0 V
++8 -43 V
++9 -58 V
++8 -14 V
++9 -61 V
++8 -81 V
++8 -51 V
++9 -65 V
++8 -66 V
++9 -58 V
++8 -61 V
++8 -28 V
++9 -29 V
++8 -43 V
++9 -14 V
++8 -15 V
++8 29 V
++9 14 V
++8 15 V
++9 28 V
++8 43 V
++9 47 V
++8 29 V
++8 28 V
++9 52 V
++8 50 V
++9 53 V
++8 42 V
++8 38 V
++9 57 V
++8 36 V
++9 25 V
++8 15 V
++8 14 V
++9 14 V
++8 0 V
++9 -14 V
++8 -14 V
++8 -15 V
++9 -32 V
++8 -36 V
++9 -36 V
++8 -37 V
++8 -43 V
++9 -50 V
++8 -38 V
++9 -32 V
++8 -34 V
++8 -43 V
++9 -22 V
++8 -7 V
++9 -18 V
++8 0 V
++8 0 V
++9 11 V
++8 21 V
++9 15 V
++8 14 V
++8 29 V
++9 37 V
++8 33 V
++9 36 V
++8 25 V
++9 37 V
++8 52 V
++8 14 V
++9 29 V
++8 29 V
++9 7 V
++8 25 V
++8 14 V
++9 15 V
++8 14 V
++9 -14 V
++8 -15 V
++8 0 V
++9 -14 V
++8 -32 V
++9 -22 V
++8 -50 V
++8 -27 V
++9 -36 V
++8 -44 V
++9 -26 V
++8 -28 V
++8 -18 V
++9 -20 V
++8 -21 V
++9 0 V
++8 0 V
++8 7 V
++9 -7 V
++8 0 V
++9 21 V
++8 23 V
++8 22 V
++9 14 V
++8 19 V
++9 38 V
++8 27 V
++9 11 V
++8 22 V
++8 30 V
++9 22 V
++8 14 V
++9 22 V
++8 28 V
++8 11 V
++9 14 V
++8 0 V
++9 15 V
++8 -15 V
++8 -14 V
++9 -18 V
++8 -7 V
++9 -36 V
++8 -21 V
++8 -29 V
++9 -23 V
++8 -22 V
++9 -24 V
++8 -22 V
++8 -18 V
++9 -14 V
++8 -3 V
++9 -14 V
++8 -7 V
++8 7 V
++9 4 V
++8 7 V
++9 15 V
++8 0 V
++8 23 V
++9 9 V
++8 -3 V
++9 22 V
++8 11 V
++8 7 V
++9 7 V
++8 7 V
++9 24 V
++8 7 V
++9 7 V
++8 14 V
++8 8 V
++9 0 V
++8 -8 V
++9 0 V
++8 0 V
++8 -14 V
++9 0 V
++8 -20 V
++9 -18 V
++8 -3 V
++8 -4 V
++9 -14 V
++8 -11 V
++9 0 V
++8 0 V
++8 -3 V
++9 -16 V
++8 -3 V
++9 2 V
++8 0 V
++8 7 V
++9 -7 V
++8 7 V
++9 5 V
++8 5 V
++8 0 V
++9 3 V
++8 4 V
++9 0 V
++8 -7 V
++8 10 V
++9 0 V
++8 4 V
++9 7 V
++8 4 V
++8 -4 V
++9 -4 V
++8 -10 V
++9 -10 V
++8 -2 V
++9 -12 V
++8 -13 V
++8 -14 V
++9 -11 V
++8 3 V
++9 -1 V
++8 -7 V
++8 0 V
++9 5 V
++8 -5 V
++9 5 V
++8 3 V
++8 4 V
++9 7 V
++8 6 V
++9 -2 V
++8 2 V
++8 7 V
++9 5 V
++8 0 V
++9 11 V
++8 -5 V
++8 0 V
++9 3 V
++8 2 V
++9 4 V
++8 -4 V
++8 4 V
++9 1 V
++8 -12 V
++9 0 V
++8 -7 V
++8 -11 V
++9 -2 V
++8 -9 V
++9 -12 V
++8 -10 V
++9 -4 V
++8 -14 V
++8 -4 V
++9 -3 V
++8 -8 V
++9 4 V
++8 -4 V
++8 0 V
++9 -3 V
++8 -7 V
++9 3 V
++8 0 V
++8 7 V
++9 4 V
++8 -4 V
++9 -3 V
++8 7 V
++8 11 V
++9 7 V
++8 4 V
++9 -4 V
++8 0 V
++8 7 V
++9 7 V
++8 7 V
++9 8 V
++8 6 V
++8 3 V
++9 2 V
++8 4 V
++9 -7 V
++8 5 V
++8 -9 V
++9 -5 V
++8 -2 V
++9 -22 V
++8 -18 V
++8 7 V
++9 3 V
++8 -14 V
++9 0 V
++8 -4 V
++9 0 V
++8 -3 V
++8 -13 V
++9 0 V
++8 -7 V
++9 7 V
++8 -14 V
++8 -7 V
++9 14 V
++8 -14 V
++9 -7 V
++8 7 V
++8 7 V
++9 -7 V
++8 0 V
++9 -7 V
++currentpoint stroke M
++8 14 V
++1.000 UL
++LT2
++3768 168 Pnt
++3768 216 Pnt
++3768 263 Pnt
++3768 311 Pnt
++3768 358 Pnt
++3768 406 Pnt
++3768 453 Pnt
++3768 501 Pnt
++3768 548 Pnt
++3768 596 Pnt
++3768 643 Pnt
++3768 691 Pnt
++3768 738 Pnt
++3768 786 Pnt
++3768 833 Pnt
++3768 881 Pnt
++3768 928 Pnt
++3768 976 Pnt
++3768 1023 Pnt
++3768 1071 Pnt
++3768 1118 Pnt
++3768 1166 Pnt
++3768 1213 Pnt
++3768 1261 Pnt
++3768 1308 Pnt
++3768 1356 Pnt
++3768 1403 Pnt
++3768 1451 Pnt
++3768 1498 Pnt
++3768 1546 Pnt
++3768 1593 Pnt
++3768 1641 Pnt
++3768 1688 Pnt
++3768 1736 Pnt
++3768 1784 Pnt
++3768 1831 Pnt
++3768 1879 Pnt
++3768 1926 Pnt
++3768 1974 Pnt
++3768 2021 Pnt
++3768 2069 Pnt
++3768 2116 Pnt
++3768 2164 Pnt
++3768 2211 Pnt
++3768 2259 Pnt
++3768 2306 Pnt
++3768 2354 Pnt
++3768 2401 Pnt
++3768 2449 Pnt
++3768 2496 Pnt
++3768 2544 Pnt
++3768 2591 Pnt
++3768 2639 Pnt
++3768 2686 Pnt
++3768 2734 Pnt
++3768 2781 Pnt
++3768 2829 Pnt
++3768 2876 Pnt
++3768 2924 Pnt
++3768 2971 Pnt
++3768 3019 Pnt
++3768 3066 Pnt
++3768 3114 Pnt
++3768 3161 Pnt
++3768 3209 Pnt
++3768 3256 Pnt
++3768 3304 Pnt
++3768 3352 Pnt
++3768 3399 Pnt
++3768 3447 Pnt
++3768 3494 Pnt
++3768 3542 Pnt
++3768 3589 Pnt
++3768 3637 Pnt
++3768 3684 Pnt
++3768 3732 Pnt
++3768 3779 Pnt
++3768 3827 Pnt
++3768 3874 Pnt
++3768 3922 Pnt
++3768 3969 Pnt
++3768 4017 Pnt
++3768 4064 Pnt
++3768 4112 Pnt
++3768 4159 Pnt
++3768 4207 Pnt
++3768 4254 Pnt
++3768 4302 Pnt
++3768 4349 Pnt
++3768 4397 Pnt
++3768 4444 Pnt
++3768 4492 Pnt
++3768 4539 Pnt
++3768 4587 Pnt
++3768 4634 Pnt
++3768 4682 Pnt
++3768 4729 Pnt
++3768 4777 Pnt
++3768 4824 Pnt
++3768 4872 Pnt
++1.000 UL
++LT2
++5113 168 Pnt
++5113 216 Pnt
++5113 263 Pnt
++5113 311 Pnt
++5113 358 Pnt
++5113 406 Pnt
++5113 453 Pnt
++5113 501 Pnt
++5113 548 Pnt
++5113 596 Pnt
++5113 643 Pnt
++5113 691 Pnt
++5113 738 Pnt
++5113 786 Pnt
++5113 833 Pnt
++5113 881 Pnt
++5113 928 Pnt
++5113 976 Pnt
++5113 1023 Pnt
++5113 1071 Pnt
++5113 1118 Pnt
++5113 1166 Pnt
++5113 1213 Pnt
++5113 1261 Pnt
++5113 1308 Pnt
++5113 1356 Pnt
++5113 1403 Pnt
++5113 1451 Pnt
++5113 1498 Pnt
++5113 1546 Pnt
++5113 1593 Pnt
++5113 1641 Pnt
++5113 1688 Pnt
++5113 1736 Pnt
++5113 1784 Pnt
++5113 1831 Pnt
++5113 1879 Pnt
++5113 1926 Pnt
++5113 1974 Pnt
++5113 2021 Pnt
++5113 2069 Pnt
++5113 2116 Pnt
++5113 2164 Pnt
++5113 2211 Pnt
++5113 2259 Pnt
++5113 2306 Pnt
++5113 2354 Pnt
++5113 2401 Pnt
++5113 2449 Pnt
++5113 2496 Pnt
++5113 2544 Pnt
++5113 2591 Pnt
++5113 2639 Pnt
++5113 2686 Pnt
++5113 2734 Pnt
++5113 2781 Pnt
++5113 2829 Pnt
++5113 2876 Pnt
++5113 2924 Pnt
++5113 2971 Pnt
++5113 3019 Pnt
++5113 3066 Pnt
++5113 3114 Pnt
++5113 3161 Pnt
++5113 3209 Pnt
++5113 3256 Pnt
++5113 3304 Pnt
++5113 3352 Pnt
++5113 3399 Pnt
++5113 3447 Pnt
++5113 3494 Pnt
++5113 3542 Pnt
++5113 3589 Pnt
++5113 3637 Pnt
++5113 3684 Pnt
++5113 3732 Pnt
++5113 3779 Pnt
++5113 3827 Pnt
++5113 3874 Pnt
++5113 3922 Pnt
++5113 3969 Pnt
++5113 4017 Pnt
++5113 4064 Pnt
++5113 4112 Pnt
++5113 4159 Pnt
++5113 4207 Pnt
++5113 4254 Pnt
++5113 4302 Pnt
++5113 4349 Pnt
++5113 4397 Pnt
++5113 4444 Pnt
++5113 4492 Pnt
++5113 4539 Pnt
++5113 4587 Pnt
++5113 4634 Pnt
++5113 4682 Pnt
++5113 4729 Pnt
++5113 4777 Pnt
++5113 4824 Pnt
++5113 4872 Pnt
++stroke
++grestore
++end
++showpage
++%%Trailer
++%%DocumentFonts: Helvetica
+--- /dev/null
++++ spro-5.0/doc/fbank.fig
+@@ -0,0 +1,71 @@
++#FIG 3.2
++Landscape
++Center
++Inches
++Letter  
++100.00
++Single
++-2
++1200 2
++6 4350 3750 4575 3975
++4 0 0 50 0 14 14 0.0000 4 150 135 4350 3900 f\001
++4 0 0 50 0 14 14 0.0000 4 150 135 4425 3975 i\001
++-6
++6 4350 4575 4575 4800
++4 0 0 50 0 14 14 0.0000 4 150 135 4425 4800 i\001
++4 0 0 50 0 14 14 0.0000 4 105 135 4350 4725 e\001
++-6
++6 3150 3750 3675 3975
++4 0 0 50 0 14 14 0.0000 4 150 135 3150 3900 f\001
++4 0 0 50 0 14 14 0.0000 4 150 405 3225 3975 i-1\001
++-6
++6 5625 3750 6150 3975
++4 0 0 50 0 14 14 0.0000 4 150 135 5625 3900 f\001
++4 0 0 50 0 14 14 0.0000 4 150 405 5700 3975 i+1\001
++-6
++2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 1 0 2
++	0 0 1.00 120.00 240.00
++	 1050 3600 9450 3600
++2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 1 0 2
++	0 0 1.00 120.00 240.00
++	 1200 3750 1200 1275
++2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 0 0 2
++	 8775 3525 8775 3675
++2 1 2 1 0 7 50 0 -1 4.000 0 0 -1 0 0 2
++	 1500 1800 1500 3600
++2 1 2 1 0 7 50 0 -1 4.000 0 0 -1 0 0 2
++	 1950 1800 1950 3600
++2 1 2 1 0 7 50 0 -1 4.000 0 0 -1 0 0 2
++	 3450 1800 3450 3600
++2 1 2 1 0 7 50 0 -1 4.000 0 0 -1 0 0 2
++	 4500 1800 4500 3600
++2 1 2 1 0 7 50 0 -1 4.000 0 0 -1 0 0 2
++	 5850 1800 5850 3600
++2 1 2 1 0 7 50 0 -1 4.000 0 0 -1 0 0 2
++	 7200 1800 7200 3600
++2 1 2 1 0 7 50 0 -1 4.000 0 0 -1 0 0 2
++	 2550 1800 2550 3600
++2 1 1 2 0 7 50 0 -1 6.000 0 0 -1 0 0 3
++	 1500 3600 1950 1800 2550 3600
++2 1 1 2 0 7 50 0 -1 6.000 0 0 -1 0 0 3
++	 1950 3600 2550 1800 3450 3600
++2 1 1 2 0 7 50 0 -1 6.000 0 0 -1 0 0 2
++	 2550 3600 3450 1800
++2 1 1 2 0 7 50 0 -1 6.000 0 0 -1 0 0 2
++	 3450 1800 4500 3600
++2 1 0 2 0 7 50 0 -1 6.000 0 0 -1 0 0 3
++	 3450 3600 4500 1800 5850 3600
++2 1 1 2 0 7 50 0 -1 6.000 0 0 -1 0 0 3
++	 4500 3600 5850 1800 7200 3600
++2 1 1 2 0 7 50 0 -1 6.000 0 0 -1 0 0 3
++	 5850 3600 7200 1800 8775 3600
++2 1 0 2 0 7 50 0 -1 0.000 0 0 -1 1 0 2
++	0 0 2.00 120.00 120.00
++	 4425 4125 4425 4500
++2 1 1 2 0 7 50 0 -1 6.000 0 0 -1 0 0 3
++	 1200 3600 1500 1800 1950 3600
++2 1 0 2 0 7 50 0 -1 6.000 0 0 -1 0 0 2
++	 3450 3600 1200 3600
++2 1 0 2 0 7 50 0 -1 6.000 0 0 -1 0 0 2
++	 5850 3600 8775 3600
++4 0 0 50 0 14 14 0.0000 4 180 540 8550 3975 Fs/2\001
+--- /dev/null
++++ spro-5.0/doc/framing.fig
+@@ -0,0 +1,78 @@
++#FIG 3.2
++Landscape
++Center
++Inches
++Letter  
++100.00
++Single
++-2
++1200 2
++6 11475 3075 11775 4500
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 0 0 2
++	 11491 3468 11689 3468
++2 1 2 2 8 7 50 0 -1 1.500 0 0 -1 0 0 2
++	 11590 3576 11590 4012
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 0 0 5
++	 11491 3141 11491 4445 11689 4445 11689 3141 11491 3141
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 0 0 2
++	 11491 3305 11689 3305
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 0 0 2
++	 11491 4119 11689 4119
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 0 0 2
++	 11491 4283 11689 4283
++-6
++6 11475 4725 11775 6150
++2 1 2 2 12 7 50 0 -1 1.500 0 0 -1 0 0 2
++	 11590 5226 11590 5662
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 0 0 2
++	 11491 5118 11689 5118
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 0 0 5
++	 11491 4791 11491 6095 11689 6095 11689 4791 11491 4791
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 0 0 2
++	 11491 4955 11689 4955
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 0 0 2
++	 11491 5769 11689 5769
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 0 0 2
++	 11491 5933 11689 5933
++-6
++2 5 0 1 0 -1 50 0 -1 0.000 0 0 -1 0 0 5
++	0 frm1.eps
++	 7314 3479 9583 3479 9583 4241 7314 4241 7314 3479
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 1 0 2
++	0 0 2.00 121.50 243.00
++	 9880 3806 11361 3806
++2 5 0 1 0 -1 50 0 -1 0.000 0 0 -1 0 0 5
++	0 frm2.eps
++	 7314 4946 9583 4946 9583 5708 7314 5708 7314 4946
++2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 1 1 2
++	0 0 1.00 60.85 121.70
++	0 0 1.00 60.85 121.70
++	 5436 927 6227 927
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 0 0 2
++	 5436 927 5436 3371
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 0 0 2
++	 7017 927 7017 3371
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 1 0 3
++	0 0 2.00 121.50 243.00
++	 6227 3479 6227 5437 7017 5437
++2 1 1 2 12 7 50 0 -1 4.500 0 0 -1 1 0 2
++	0 0 2.00 121.50 243.00
++	 9781 5437 11261 5437
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 0 0 2
++	 4746 3371 4746 927
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 0 0 2
++	 6227 3371 6227 927
++2 1 0 2 8 7 50 0 -1 0.000 0 0 -1 1 0 3
++	0 0 2.00 121.50 243.00
++	 5436 3479 5436 3806 7116 3806
++2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 1 1 2
++	0 0 1.00 60.85 121.70
++	0 0 1.00 60.85 121.70
++	 4746 3371 6227 3371
++2 5 0 1 0 -1 52 0 -1 0.000 0 0 -1 0 0 5
++	0 sig2.eps
++	 600 600 8498 600 8498 3643 600 3643 600 600
++4 0 0 50 0 14 16 0.0000 4 150 1200 4875 3300 20-30 ms\001
++4 0 0 50 0 14 16 0.0000 4 150 1200 5250 825 10-15 ms\001
++4 0 0 50 0 14 14 0.0000 4 195 810 10050 5325 y(n+1)\001
++4 0 0 50 0 14 14 0.0000 4 195 540 10200 3675 y(n)\001
+--- /dev/null
++++ spro-5.0/doc/frm1.eps
+@@ -0,0 +1,594 @@
++%!PS-Adobe-2.0 EPSF-2.0
++%%Title: frm1.eps
++%%Creator: gnuplot 3.7 patchlevel 1
++%%CreationDate: Mon Jul 28 11:27:59 2003
++%%DocumentFonts: (atend)
++%%BoundingBox: 50 50 410 302
++%%Orientation: Portrait
++%%EndComments
++/gnudict 256 dict def
++gnudict begin
++/Color false def
++/Solid true def
++/gnulinewidth 5.000 def
++/userlinewidth gnulinewidth def
++/vshift -46 def
++/dl {10 mul} def
++/hpt_ 31.5 def
++/vpt_ 31.5 def
++/hpt hpt_ def
++/vpt vpt_ def
++/M {moveto} bind def
++/L {lineto} bind def
++/R {rmoveto} bind def
++/V {rlineto} bind def
++/vpt2 vpt 2 mul def
++/hpt2 hpt 2 mul def
++/Lshow { currentpoint stroke M
++  0 vshift R show } def
++/Rshow { currentpoint stroke M
++  dup stringwidth pop neg vshift R show } def
++/Cshow { currentpoint stroke M
++  dup stringwidth pop -2 div vshift R show } def
++/UP { dup vpt_ mul /vpt exch def hpt_ mul /hpt exch def
++  /hpt2 hpt 2 mul def /vpt2 vpt 2 mul def } def
++/DL { Color {setrgbcolor Solid {pop []} if 0 setdash }
++ {pop pop pop Solid {pop []} if 0 setdash} ifelse } def
++/BL { stroke userlinewidth 2 mul setlinewidth } def
++/AL { stroke userlinewidth 2 div setlinewidth } def
++/UL { dup gnulinewidth mul /userlinewidth exch def
++      10 mul /udl exch def } def
++/PL { stroke userlinewidth setlinewidth } def
++/LTb { BL [] 0 0 0 DL } def
++/LTa { AL [1 udl mul 2 udl mul] 0 setdash 0 0 0 setrgbcolor } def
++/LT0 { PL [] 1 0 0 DL } def
++/LT1 { PL [4 dl 2 dl] 0 1 0 DL } def
++/LT2 { PL [2 dl 3 dl] 0 0 1 DL } def
++/LT3 { PL [1 dl 1.5 dl] 1 0 1 DL } def
++/LT4 { PL [5 dl 2 dl 1 dl 2 dl] 0 1 1 DL } def
++/LT5 { PL [4 dl 3 dl 1 dl 3 dl] 1 1 0 DL } def
++/LT6 { PL [2 dl 2 dl 2 dl 4 dl] 0 0 0 DL } def
++/LT7 { PL [2 dl 2 dl 2 dl 2 dl 2 dl 4 dl] 1 0.3 0 DL } def
++/LT8 { PL [2 dl 2 dl 2 dl 2 dl 2 dl 2 dl 2 dl 4 dl] 0.5 0.5 0.5 DL } def
++/Pnt { stroke [] 0 setdash
++   gsave 1 setlinecap M 0 0 V stroke grestore } def
++/Dia { stroke [] 0 setdash 2 copy vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath stroke
++  Pnt } def
++/Pls { stroke [] 0 setdash vpt sub M 0 vpt2 V
++  currentpoint stroke M
++  hpt neg vpt neg R hpt2 0 V stroke
++  } def
++/Box { stroke [] 0 setdash 2 copy exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V closepath stroke
++  Pnt } def
++/Crs { stroke [] 0 setdash exch hpt sub exch vpt add M
++  hpt2 vpt2 neg V currentpoint stroke M
++  hpt2 neg 0 R hpt2 vpt2 V stroke } def
++/TriU { stroke [] 0 setdash 2 copy vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath stroke
++  Pnt  } def
++/Star { 2 copy Pls Crs } def
++/BoxF { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V  hpt2 0 V  0 vpt2 V
++  hpt2 neg 0 V  closepath fill } def
++/TriUF { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath fill } def
++/TriD { stroke [] 0 setdash 2 copy vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath stroke
++  Pnt  } def
++/TriDF { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath fill} def
++/DiaF { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath fill } def
++/Pent { stroke [] 0 setdash 2 copy gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath stroke grestore Pnt } def
++/PentF { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath fill grestore } def
++/Circle { stroke [] 0 setdash 2 copy
++  hpt 0 360 arc stroke Pnt } def
++/CircleF { stroke [] 0 setdash hpt 0 360 arc fill } def
++/C0 { BL [] 0 setdash 2 copy moveto vpt 90 450  arc } bind def
++/C1 { BL [] 0 setdash 2 copy        moveto
++       2 copy  vpt 0 90 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C2 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 90 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C3 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C4 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 180 270 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C5 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 90 arc
++       2 copy moveto
++       2 copy  vpt 180 270 arc closepath fill
++               vpt 0 360 arc } bind def
++/C6 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 90 270 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C7 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 0 270 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C8 { BL [] 0 setdash 2 copy moveto
++      2 copy vpt 270 360 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C9 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 270 450 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C10 { BL [] 0 setdash 2 copy 2 copy moveto vpt 270 360 arc closepath fill
++       2 copy moveto
++       2 copy vpt 90 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C11 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 180 arc closepath fill
++       2 copy moveto
++       2 copy  vpt 270 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C12 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 180 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C13 { BL [] 0 setdash  2 copy moveto
++       2 copy  vpt 0 90 arc closepath fill
++       2 copy moveto
++       2 copy  vpt 180 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C14 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 90 360 arc closepath fill
++               vpt 0 360 arc } bind def
++/C15 { BL [] 0 setdash 2 copy vpt 0 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/Rec   { newpath 4 2 roll moveto 1 index 0 rlineto 0 exch rlineto
++       neg 0 rlineto closepath } bind def
++/Square { dup Rec } bind def
++/Bsquare { vpt sub exch vpt sub exch vpt2 Square } bind def
++/S0 { BL [] 0 setdash 2 copy moveto 0 vpt rlineto BL Bsquare } bind def
++/S1 { BL [] 0 setdash 2 copy vpt Square fill Bsquare } bind def
++/S2 { BL [] 0 setdash 2 copy exch vpt sub exch vpt Square fill Bsquare } bind def
++/S3 { BL [] 0 setdash 2 copy exch vpt sub exch vpt2 vpt Rec fill Bsquare } bind def
++/S4 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt Square fill Bsquare } bind def
++/S5 { BL [] 0 setdash 2 copy 2 copy vpt Square fill
++       exch vpt sub exch vpt sub vpt Square fill Bsquare } bind def
++/S6 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt vpt2 Rec fill Bsquare } bind def
++/S7 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt vpt2 Rec fill
++       2 copy vpt Square fill
++       Bsquare } bind def
++/S8 { BL [] 0 setdash 2 copy vpt sub vpt Square fill Bsquare } bind def
++/S9 { BL [] 0 setdash 2 copy vpt sub vpt vpt2 Rec fill Bsquare } bind def
++/S10 { BL [] 0 setdash 2 copy vpt sub vpt Square fill 2 copy exch vpt sub exch vpt Square fill
++       Bsquare } bind def
++/S11 { BL [] 0 setdash 2 copy vpt sub vpt Square fill 2 copy exch vpt sub exch vpt2 vpt Rec fill
++       Bsquare } bind def
++/S12 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill Bsquare } bind def
++/S13 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill
++       2 copy vpt Square fill Bsquare } bind def
++/S14 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill
++       2 copy exch vpt sub exch vpt Square fill Bsquare } bind def
++/S15 { BL [] 0 setdash 2 copy Bsquare fill Bsquare } bind def
++/D0 { gsave translate 45 rotate 0 0 S0 stroke grestore } bind def
++/D1 { gsave translate 45 rotate 0 0 S1 stroke grestore } bind def
++/D2 { gsave translate 45 rotate 0 0 S2 stroke grestore } bind def
++/D3 { gsave translate 45 rotate 0 0 S3 stroke grestore } bind def
++/D4 { gsave translate 45 rotate 0 0 S4 stroke grestore } bind def
++/D5 { gsave translate 45 rotate 0 0 S5 stroke grestore } bind def
++/D6 { gsave translate 45 rotate 0 0 S6 stroke grestore } bind def
++/D7 { gsave translate 45 rotate 0 0 S7 stroke grestore } bind def
++/D8 { gsave translate 45 rotate 0 0 S8 stroke grestore } bind def
++/D9 { gsave translate 45 rotate 0 0 S9 stroke grestore } bind def
++/D10 { gsave translate 45 rotate 0 0 S10 stroke grestore } bind def
++/D11 { gsave translate 45 rotate 0 0 S11 stroke grestore } bind def
++/D12 { gsave translate 45 rotate 0 0 S12 stroke grestore } bind def
++/D13 { gsave translate 45 rotate 0 0 S13 stroke grestore } bind def
++/D14 { gsave translate 45 rotate 0 0 S14 stroke grestore } bind def
++/D15 { gsave translate 45 rotate 0 0 S15 stroke grestore } bind def
++/DiaE { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath stroke } def
++/BoxE { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V closepath stroke } def
++/TriUE { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath stroke } def
++/TriDE { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath stroke } def
++/PentE { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath stroke grestore } def
++/CircE { stroke [] 0 setdash 
++  hpt 0 360 arc stroke } def
++/Opaque { gsave closepath 1 setgray fill grestore 0 setgray closepath } def
++/DiaW { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V Opaque stroke } def
++/BoxW { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V Opaque stroke } def
++/TriUW { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V Opaque stroke } def
++/TriDW { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V Opaque stroke } def
++/PentW { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  Opaque stroke grestore } def
++/CircW { stroke [] 0 setdash 
++  hpt 0 360 arc Opaque stroke } def
++/BoxFill { gsave Rec 1 setgray fill grestore } def
++/MFshow {{dup dup 0 get findfont exch 1 get scalefont setfont
++     [ currentpoint ] exch dup 2 get 0 exch rmoveto dup dup 5 get exch 4 get
++     {show} {stringwidth pop 0 rmoveto}ifelse dup 3 get
++     {2 get neg 0 exch rmoveto pop} {pop aload pop moveto}ifelse} forall} bind def
++/MFwidth {0 exch {dup 3 get{dup dup 0 get findfont exch 1 get scalefont setfont
++      5 get stringwidth pop add}
++    {pop} ifelse} forall} bind def
++/MLshow { currentpoint stroke M
++  0 exch R MFshow } bind def
++/MRshow { currentpoint stroke M
++  exch dup MFwidth neg 3 -1 roll R MFshow } def
++/MCshow { currentpoint stroke M
++  exch dup MFwidth -2 div 3 -1 roll R MFshow } def
++end
++%%EndProlog
++gnudict begin
++gsave
++50 50 translate
++0.050 0.050 scale
++0 setgray
++newpath
++(Helvetica) findfont 140 scalefont setfont
++1.000 UL
++LTb
++3.000 UL
++LT0
++238 2985 M
++42 0 V
++42 2 V
++42 4 V
++42 5 V
++42 6 V
++42 8 V
++42 9 V
++42 11 V
++42 12 V
++42 13 V
++42 14 V
++42 16 V
++42 17 V
++42 19 V
++42 19 V
++42 21 V
++42 22 V
++42 23 V
++42 24 V
++42 25 V
++43 26 V
++42 27 V
++42 28 V
++42 29 V
++42 30 V
++42 30 V
++42 31 V
++42 32 V
++42 33 V
++42 33 V
++42 34 V
++42 34 V
++42 35 V
++42 35 V
++42 35 V
++42 36 V
++42 36 V
++42 36 V
++42 36 V
++42 36 V
++42 36 V
++42 36 V
++42 36 V
++42 36 V
++42 36 V
++42 35 V
++42 35 V
++42 35 V
++42 34 V
++42 34 V
++42 33 V
++42 33 V
++42 32 V
++42 31 V
++42 30 V
++42 30 V
++42 29 V
++42 28 V
++42 27 V
++42 26 V
++43 25 V
++42 24 V
++42 23 V
++42 22 V
++42 21 V
++42 19 V
++42 19 V
++42 17 V
++42 15 V
++42 15 V
++42 13 V
++42 12 V
++42 11 V
++42 9 V
++42 7 V
++42 7 V
++42 5 V
++42 3 V
++42 2 V
++42 1 V
++42 -1 V
++42 -2 V
++42 -3 V
++42 -5 V
++42 -7 V
++42 -7 V
++42 -9 V
++42 -11 V
++42 -12 V
++42 -13 V
++42 -15 V
++42 -15 V
++42 -17 V
++42 -19 V
++42 -19 V
++42 -21 V
++42 -22 V
++42 -23 V
++42 -24 V
++42 -25 V
++43 -26 V
++42 -27 V
++42 -28 V
++42 -29 V
++42 -30 V
++42 -30 V
++42 -31 V
++42 -32 V
++42 -33 V
++42 -33 V
++42 -34 V
++42 -34 V
++42 -35 V
++42 -35 V
++42 -35 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -36 V
++42 -35 V
++42 -35 V
++42 -35 V
++42 -34 V
++42 -34 V
++42 -33 V
++42 -33 V
++42 -32 V
++42 -31 V
++42 -30 V
++42 -30 V
++42 -29 V
++42 -28 V
++42 -27 V
++42 -26 V
++43 -25 V
++42 -24 V
++42 -23 V
++42 -22 V
++42 -21 V
++42 -19 V
++42 -19 V
++42 -17 V
++42 -16 V
++42 -14 V
++42 -13 V
++42 -12 V
++42 -11 V
++42 -9 V
++42 -8 V
++42 -6 V
++42 -5 V
++42 -4 V
++42 -2 V
++42 0 V
++10.000 UL
++LT0
++238 2845 M
++42 -8 V
++42 -9 V
++42 -10 V
++42 -5 V
++42 1 V
++42 1 V
++42 0 V
++42 -1 V
++42 -10 V
++42 19 V
++42 34 V
++42 -2 V
++42 21 V
++42 30 V
++42 31 V
++42 42 V
++42 17 V
++42 30 V
++42 66 V
++42 25 V
++43 -19 V
++42 35 V
++42 74 V
++42 36 V
++42 26 V
++42 41 V
++42 91 V
++42 106 V
++42 -34 V
++42 -39 V
++42 54 V
++42 -12 V
++42 -94 V
++42 -150 V
++42 -168 V
++42 -182 V
++42 -217 V
++42 -249 V
++42 -210 V
++42 -212 V
++42 -176 V
++42 -136 V
++42 -193 V
++42 -124 V
++42 88 V
++42 68 V
++42 -40 V
++42 78 V
++42 143 V
++42 153 V
++42 225 V
++42 60 V
++42 244 V
++42 279 V
++42 96 V
++42 31 V
++42 168 V
++42 336 V
++42 142 V
++42 229 V
++43 404 V
++42 319 V
++42 249 V
++42 98 V
++42 -138 V
++42 177 V
++42 98 V
++42 -227 V
++42 -396 V
++42 -341 V
++42 -461 V
++42 -431 V
++42 -499 V
++42 -519 V
++42 -407 V
++42 -430 V
++42 -260 V
++42 -346 V
++42 -216 V
++42 -1 V
++42 -170 V
++42 3 V
++42 176 V
++42 304 V
++42 262 V
++42 346 V
++42 176 V
++42 447 V
++42 422 V
++42 242 V
++42 126 V
++42 242 V
++42 337 V
++42 227 V
++42 232 V
++42 479 V
++42 217 V
++42 134 V
++42 54 V
++42 125 V
++43 -99 V
++42 -25 V
++42 -239 V
++42 -301 V
++42 -88 V
++42 -302 V
++42 -382 V
++42 -234 V
++42 -288 V
++42 -278 V
++42 -227 V
++42 -231 V
++42 -89 V
++42 -83 V
++42 -131 V
++42 -17 V
++42 -13 V
++42 138 V
++42 83 V
++42 81 V
++42 123 V
++42 159 V
++42 160 V
++42 101 V
++42 94 V
++42 148 V
++42 132 V
++42 129 V
++42 93 V
++42 75 V
++42 109 V
++42 55 V
++42 29 V
++42 5 V
++42 3 V
++42 1 V
++42 -23 V
++42 -42 V
++42 -40 V
++42 -37 V
++43 -55 V
++42 -54 V
++42 -49 V
++42 -45 V
++42 -46 V
++42 -45 V
++42 -32 V
++42 -22 V
++42 -21 V
++42 -24 V
++42 -8 V
++42 2 V
++42 -4 V
++42 5 V
++42 5 V
++42 9 V
++42 14 V
++42 9 V
++42 8 V
++42 14 V
++stroke
++grestore
++end
++showpage
++%%Trailer
++%%DocumentFonts: Helvetica
+--- /dev/null
++++ spro-5.0/doc/frm2.eps
+@@ -0,0 +1,594 @@
++%!PS-Adobe-2.0 EPSF-2.0
++%%Title: frm2.eps
++%%Creator: gnuplot 3.7 patchlevel 1
++%%CreationDate: Mon Jul 28 11:28:29 2003
++%%DocumentFonts: (atend)
++%%BoundingBox: 50 50 410 302
++%%Orientation: Portrait
++%%EndComments
++/gnudict 256 dict def
++gnudict begin
++/Color false def
++/Solid true def
++/gnulinewidth 5.000 def
++/userlinewidth gnulinewidth def
++/vshift -46 def
++/dl {10 mul} def
++/hpt_ 31.5 def
++/vpt_ 31.5 def
++/hpt hpt_ def
++/vpt vpt_ def
++/M {moveto} bind def
++/L {lineto} bind def
++/R {rmoveto} bind def
++/V {rlineto} bind def
++/vpt2 vpt 2 mul def
++/hpt2 hpt 2 mul def
++/Lshow { currentpoint stroke M
++  0 vshift R show } def
++/Rshow { currentpoint stroke M
++  dup stringwidth pop neg vshift R show } def
++/Cshow { currentpoint stroke M
++  dup stringwidth pop -2 div vshift R show } def
++/UP { dup vpt_ mul /vpt exch def hpt_ mul /hpt exch def
++  /hpt2 hpt 2 mul def /vpt2 vpt 2 mul def } def
++/DL { Color {setrgbcolor Solid {pop []} if 0 setdash }
++ {pop pop pop Solid {pop []} if 0 setdash} ifelse } def
++/BL { stroke userlinewidth 2 mul setlinewidth } def
++/AL { stroke userlinewidth 2 div setlinewidth } def
++/UL { dup gnulinewidth mul /userlinewidth exch def
++      10 mul /udl exch def } def
++/PL { stroke userlinewidth setlinewidth } def
++/LTb { BL [] 0 0 0 DL } def
++/LTa { AL [1 udl mul 2 udl mul] 0 setdash 0 0 0 setrgbcolor } def
++/LT0 { PL [] 1 0 0 DL } def
++/LT1 { PL [4 dl 2 dl] 0 1 0 DL } def
++/LT2 { PL [2 dl 3 dl] 0 0 1 DL } def
++/LT3 { PL [1 dl 1.5 dl] 1 0 1 DL } def
++/LT4 { PL [5 dl 2 dl 1 dl 2 dl] 0 1 1 DL } def
++/LT5 { PL [4 dl 3 dl 1 dl 3 dl] 1 1 0 DL } def
++/LT6 { PL [2 dl 2 dl 2 dl 4 dl] 0 0 0 DL } def
++/LT7 { PL [2 dl 2 dl 2 dl 2 dl 2 dl 4 dl] 1 0.3 0 DL } def
++/LT8 { PL [2 dl 2 dl 2 dl 2 dl 2 dl 2 dl 2 dl 4 dl] 0.5 0.5 0.5 DL } def
++/Pnt { stroke [] 0 setdash
++   gsave 1 setlinecap M 0 0 V stroke grestore } def
++/Dia { stroke [] 0 setdash 2 copy vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath stroke
++  Pnt } def
++/Pls { stroke [] 0 setdash vpt sub M 0 vpt2 V
++  currentpoint stroke M
++  hpt neg vpt neg R hpt2 0 V stroke
++  } def
++/Box { stroke [] 0 setdash 2 copy exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V closepath stroke
++  Pnt } def
++/Crs { stroke [] 0 setdash exch hpt sub exch vpt add M
++  hpt2 vpt2 neg V currentpoint stroke M
++  hpt2 neg 0 R hpt2 vpt2 V stroke } def
++/TriU { stroke [] 0 setdash 2 copy vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath stroke
++  Pnt  } def
++/Star { 2 copy Pls Crs } def
++/BoxF { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V  hpt2 0 V  0 vpt2 V
++  hpt2 neg 0 V  closepath fill } def
++/TriUF { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath fill } def
++/TriD { stroke [] 0 setdash 2 copy vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath stroke
++  Pnt  } def
++/TriDF { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath fill} def
++/DiaF { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath fill } def
++/Pent { stroke [] 0 setdash 2 copy gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath stroke grestore Pnt } def
++/PentF { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath fill grestore } def
++/Circle { stroke [] 0 setdash 2 copy
++  hpt 0 360 arc stroke Pnt } def
++/CircleF { stroke [] 0 setdash hpt 0 360 arc fill } def
++/C0 { BL [] 0 setdash 2 copy moveto vpt 90 450  arc } bind def
++/C1 { BL [] 0 setdash 2 copy        moveto
++       2 copy  vpt 0 90 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C2 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 90 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C3 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C4 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 180 270 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C5 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 90 arc
++       2 copy moveto
++       2 copy  vpt 180 270 arc closepath fill
++               vpt 0 360 arc } bind def
++/C6 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 90 270 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C7 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 0 270 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C8 { BL [] 0 setdash 2 copy moveto
++      2 copy vpt 270 360 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C9 { BL [] 0 setdash 2 copy moveto
++      2 copy  vpt 270 450 arc closepath fill
++              vpt 0 360 arc closepath } bind def
++/C10 { BL [] 0 setdash 2 copy 2 copy moveto vpt 270 360 arc closepath fill
++       2 copy moveto
++       2 copy vpt 90 180 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C11 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 0 180 arc closepath fill
++       2 copy moveto
++       2 copy  vpt 270 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C12 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 180 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C13 { BL [] 0 setdash  2 copy moveto
++       2 copy  vpt 0 90 arc closepath fill
++       2 copy moveto
++       2 copy  vpt 180 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/C14 { BL [] 0 setdash 2 copy moveto
++       2 copy  vpt 90 360 arc closepath fill
++               vpt 0 360 arc } bind def
++/C15 { BL [] 0 setdash 2 copy vpt 0 360 arc closepath fill
++               vpt 0 360 arc closepath } bind def
++/Rec   { newpath 4 2 roll moveto 1 index 0 rlineto 0 exch rlineto
++       neg 0 rlineto closepath } bind def
++/Square { dup Rec } bind def
++/Bsquare { vpt sub exch vpt sub exch vpt2 Square } bind def
++/S0 { BL [] 0 setdash 2 copy moveto 0 vpt rlineto BL Bsquare } bind def
++/S1 { BL [] 0 setdash 2 copy vpt Square fill Bsquare } bind def
++/S2 { BL [] 0 setdash 2 copy exch vpt sub exch vpt Square fill Bsquare } bind def
++/S3 { BL [] 0 setdash 2 copy exch vpt sub exch vpt2 vpt Rec fill Bsquare } bind def
++/S4 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt Square fill Bsquare } bind def
++/S5 { BL [] 0 setdash 2 copy 2 copy vpt Square fill
++       exch vpt sub exch vpt sub vpt Square fill Bsquare } bind def
++/S6 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt vpt2 Rec fill Bsquare } bind def
++/S7 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt vpt2 Rec fill
++       2 copy vpt Square fill
++       Bsquare } bind def
++/S8 { BL [] 0 setdash 2 copy vpt sub vpt Square fill Bsquare } bind def
++/S9 { BL [] 0 setdash 2 copy vpt sub vpt vpt2 Rec fill Bsquare } bind def
++/S10 { BL [] 0 setdash 2 copy vpt sub vpt Square fill 2 copy exch vpt sub exch vpt Square fill
++       Bsquare } bind def
++/S11 { BL [] 0 setdash 2 copy vpt sub vpt Square fill 2 copy exch vpt sub exch vpt2 vpt Rec fill
++       Bsquare } bind def
++/S12 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill Bsquare } bind def
++/S13 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill
++       2 copy vpt Square fill Bsquare } bind def
++/S14 { BL [] 0 setdash 2 copy exch vpt sub exch vpt sub vpt2 vpt Rec fill
++       2 copy exch vpt sub exch vpt Square fill Bsquare } bind def
++/S15 { BL [] 0 setdash 2 copy Bsquare fill Bsquare } bind def
++/D0 { gsave translate 45 rotate 0 0 S0 stroke grestore } bind def
++/D1 { gsave translate 45 rotate 0 0 S1 stroke grestore } bind def
++/D2 { gsave translate 45 rotate 0 0 S2 stroke grestore } bind def
++/D3 { gsave translate 45 rotate 0 0 S3 stroke grestore } bind def
++/D4 { gsave translate 45 rotate 0 0 S4 stroke grestore } bind def
++/D5 { gsave translate 45 rotate 0 0 S5 stroke grestore } bind def
++/D6 { gsave translate 45 rotate 0 0 S6 stroke grestore } bind def
++/D7 { gsave translate 45 rotate 0 0 S7 stroke grestore } bind def
++/D8 { gsave translate 45 rotate 0 0 S8 stroke grestore } bind def
++/D9 { gsave translate 45 rotate 0 0 S9 stroke grestore } bind def
++/D10 { gsave translate 45 rotate 0 0 S10 stroke grestore } bind def
++/D11 { gsave translate 45 rotate 0 0 S11 stroke grestore } bind def
++/D12 { gsave translate 45 rotate 0 0 S12 stroke grestore } bind def
++/D13 { gsave translate 45 rotate 0 0 S13 stroke grestore } bind def
++/D14 { gsave translate 45 rotate 0 0 S14 stroke grestore } bind def
++/D15 { gsave translate 45 rotate 0 0 S15 stroke grestore } bind def
++/DiaE { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V closepath stroke } def
++/BoxE { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V closepath stroke } def
++/TriUE { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V closepath stroke } def
++/TriDE { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V closepath stroke } def
++/PentE { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  closepath stroke grestore } def
++/CircE { stroke [] 0 setdash 
++  hpt 0 360 arc stroke } def
++/Opaque { gsave closepath 1 setgray fill grestore 0 setgray closepath } def
++/DiaW { stroke [] 0 setdash vpt add M
++  hpt neg vpt neg V hpt vpt neg V
++  hpt vpt V hpt neg vpt V Opaque stroke } def
++/BoxW { stroke [] 0 setdash exch hpt sub exch vpt add M
++  0 vpt2 neg V hpt2 0 V 0 vpt2 V
++  hpt2 neg 0 V Opaque stroke } def
++/TriUW { stroke [] 0 setdash vpt 1.12 mul add M
++  hpt neg vpt -1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt 1.62 mul V Opaque stroke } def
++/TriDW { stroke [] 0 setdash vpt 1.12 mul sub M
++  hpt neg vpt 1.62 mul V
++  hpt 2 mul 0 V
++  hpt neg vpt -1.62 mul V Opaque stroke } def
++/PentW { stroke [] 0 setdash gsave
++  translate 0 hpt M 4 {72 rotate 0 hpt L} repeat
++  Opaque stroke grestore } def
++/CircW { stroke [] 0 setdash 
++  hpt 0 360 arc Opaque stroke } def
++/BoxFill { gsave Rec 1 setgray fill grestore } def
++/MFshow {{dup dup 0 get findfont exch 1 get scalefont setfont
++     [ currentpoint ] exch dup 2 get 0 exch rmoveto dup dup 5 get exch 4 get
++     {show} {stringwidth pop 0 rmoveto}ifelse dup 3 get
++     {2 get neg 0 exch rmoveto pop} {pop aload pop moveto}ifelse} forall} bind def
++/MFwidth {0 exch {dup 3 get{dup dup 0 get findfont exch 1 get scalefont setfont
++      5 get stringwidth pop add}
++    {pop} ifelse} forall} bind def
++/MLshow { currentpoint stroke M
++  0 exch R MFshow } bind def
++/MRshow { currentpoint stroke M
++  exch dup MFwidth neg 3 -1 roll R MFshow } def
++/MCshow { currentpoint stroke M
++  exch dup MFwidth -2 div 3 -1 roll R MFshow } def
++end
++%%EndProlog
++gnudict begin
++gsave
++50 50 translate
++0.050 0.050 scale
++0 setgray
++newpath
++(Helvetica) findfont 140 scalefont setfont
++1.000 UL
++LTb
++3.000 UL
++LT0
++238 1950 M
++42 2 V
++42 3 V
++42 6 V
++42 7 V
++42 10 V
++42 13 V
++42 14 V
++42 17 V
++42 19 V
++42 21 V
++42 23 V
++42 25 V
++42 27 V
++42 29 V
++42 31 V
++42 32 V
++42 35 V
++42 36 V
++42 39 V
++42 39 V
++43 42 V
++42 42 V
++42 45 V
++42 46 V
++42 47 V
++42 48 V
++42 49 V
++42 51 V
++42 52 V
++42 52 V
++42 54 V
++42 54 V
++42 55 V
++42 55 V
++42 56 V
++42 57 V
++42 57 V
++42 57 V
++42 57 V
++42 57 V
++42 58 V
++42 57 V
++42 57 V
++42 57 V
++42 56 V
++42 56 V
++42 56 V
++42 55 V
++42 54 V
++42 53 V
++42 53 V
++42 51 V
++42 51 V
++42 49 V
++42 49 V
++42 47 V
++42 46 V
++42 44 V
++42 43 V
++42 41 V
++43 40 V
++42 38 V
++42 36 V
++42 35 V
++42 33 V
++42 31 V
++42 29 V
++42 27 V
++42 25 V
++42 23 V
++42 21 V
++42 19 V
++42 16 V
++42 15 V
++42 12 V
++42 10 V
++42 8 V
++42 5 V
++42 4 V
++42 1 V
++42 -1 V
++42 -4 V
++42 -5 V
++42 -8 V
++42 -10 V
++42 -12 V
++42 -15 V
++42 -17 V
++42 -18 V
++42 -21 V
++42 -23 V
++42 -25 V
++42 -27 V
++42 -29 V
++42 -31 V
++42 -33 V
++42 -35 V
++42 -36 V
++42 -38 V
++42 -40 V
++43 -41 V
++42 -43 V
++42 -44 V
++42 -46 V
++42 -47 V
++42 -49 V
++42 -49 V
++42 -51 V
++42 -51 V
++42 -53 V
++42 -53 V
++42 -54 V
++42 -55 V
++42 -56 V
++42 -56 V
++42 -56 V
++42 -57 V
++42 -57 V
++42 -57 V
++42 -58 V
++42 -57 V
++42 -57 V
++42 -58 V
++42 -56 V
++42 -57 V
++42 -56 V
++42 -55 V
++42 -55 V
++42 -54 V
++42 -54 V
++42 -52 V
++42 -52 V
++42 -51 V
++42 -49 V
++42 -48 V
++42 -47 V
++42 -46 V
++42 -45 V
++42 -42 V
++42 -42 V
++43 -40 V
++42 -38 V
++42 -36 V
++42 -35 V
++42 -32 V
++42 -31 V
++42 -29 V
++42 -27 V
++42 -25 V
++42 -23 V
++42 -21 V
++42 -19 V
++42 -17 V
++42 -14 V
++42 -13 V
++42 -10 V
++42 -7 V
++42 -6 V
++42 -3 V
++42 -2 V
++10.000 UL
++LT0
++238 1950 M
++42 -1 V
++42 -5 V
++42 -7 V
++42 -8 V
++42 -8 V
++42 -6 V
++42 -8 V
++42 3 V
++42 9 V
++42 6 V
++42 4 V
++42 15 V
++42 33 V
++42 30 V
++42 40 V
++42 87 V
++42 63 V
++42 59 V
++42 49 V
++42 73 V
++43 22 V
++42 41 V
++42 -29 V
++42 -65 V
++42 3 V
++42 -96 V
++42 -158 V
++42 -112 V
++42 -163 V
++42 -186 V
++42 -181 V
++42 -212 V
++42 -129 V
++42 -139 V
++42 -199 V
++42 -109 V
++42 -115 V
++42 53 V
++42 3 V
++42 7 V
++42 77 V
++42 155 V
++42 186 V
++42 112 V
++42 122 V
++42 257 V
++42 264 V
++42 296 V
++42 250 V
++42 237 V
++42 370 V
++42 251 V
++42 192 V
++42 127 V
++42 131 V
++42 134 V
++42 36 V
++42 -68 V
++42 -73 V
++42 -77 V
++43 -217 V
++42 -253 V
++42 -262 V
++42 -283 V
++42 -335 V
++42 -394 V
++42 -314 V
++42 -270 V
++42 -288 V
++42 -368 V
++42 -191 V
++42 -71 V
++42 -163 V
++42 -8 V
++42 -8 V
++42 87 V
++42 181 V
++42 122 V
++42 123 V
++42 249 V
++42 327 V
++42 281 V
++42 319 V
++42 217 V
++42 316 V
++42 444 V
++42 118 V
++42 237 V
++42 234 V
++42 49 V
++42 195 V
++42 103 V
++42 99 V
++42 95 V
++42 -137 V
++42 -136 V
++42 -23 V
++42 -133 V
++42 -267 V
++42 -180 V
++43 -386 V
++42 -205 V
++42 -263 V
++42 -308 V
++42 -176 V
++42 -185 V
++42 -107 V
++42 -114 V
++42 -118 V
++42 19 V
++42 18 V
++42 60 V
++42 -21 V
++42 19 V
++42 131 V
++42 134 V
++42 116 V
++42 76 V
++42 91 V
++42 167 V
++42 113 V
++42 35 V
++42 72 V
++42 99 V
++42 56 V
++42 26 V
++42 44 V
++42 59 V
++42 -1 V
++42 5 V
++42 -34 V
++42 0 V
++42 -68 V
++42 -62 V
++42 -64 V
++42 -40 V
++42 -84 V
++42 -52 V
++42 -56 V
++42 -41 V
++43 -34 V
++42 -31 V
++42 -23 V
++42 -15 V
++42 -9 V
++42 0 V
++42 -5 V
++42 0 V
++42 7 V
++42 4 V
++42 5 V
++42 5 V
++42 0 V
++42 4 V
++42 1 V
++42 -1 V
++42 0 V
++42 0 V
++42 0 V
++42 -1 V
++stroke
++grestore
++end
++showpage
++%%Trailer
++%%DocumentFonts: Helvetica
+--- /dev/null
++++ spro-5.0/spro/sptables.h
+@@ -0,0 +1,81 @@
++/* Tables for Alaw and Ulaw decoding
++
++   Obtained from the SOX software, respect to Jef Poskanzer.
++
++*/
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++short sp_ulaw_exp_table[256] = {
++	 -32124,-31100,-30076,-29052,-28028,-27004,-25980,-24956,
++	 -23932,-22908,-21884,-20860,-19836,-18812,-17788,-16764,
++	 -15996,-15484,-14972,-14460,-13948,-13436,-12924,-12412,
++	 -11900,-11388,-10876,-10364, -9852, -9340, -8828, -8316,
++	  -7932, -7676, -7420, -7164, -6908, -6652, -6396, -6140,
++	  -5884, -5628, -5372, -5116, -4860, -4604, -4348, -4092,
++	  -3900, -3772, -3644, -3516, -3388, -3260, -3132, -3004,
++	  -2876, -2748, -2620, -2492, -2364, -2236, -2108, -1980,
++	  -1884, -1820, -1756, -1692, -1628, -1564, -1500, -1436,
++	  -1372, -1308, -1244, -1180, -1116, -1052,  -988,  -924,
++	   -876,  -844,  -812,  -780,  -748,  -716,  -684,  -652,
++	   -620,  -588,  -556,  -524,  -492,  -460,  -428,  -396,
++	   -372,  -356,  -340,  -324,  -308,  -292,  -276,  -260,
++	   -244,  -228,  -212,  -196,  -180,  -164,  -148,  -132,
++	   -120,  -112,  -104,   -96,   -88,   -80,   -72,   -64,
++	    -56,   -48,   -40,   -32,   -24,   -16,    -8,     0,
++	  32124, 31100, 30076, 29052, 28028, 27004, 25980, 24956,
++	  23932, 22908, 21884, 20860, 19836, 18812, 17788, 16764,
++	  15996, 15484, 14972, 14460, 13948, 13436, 12924, 12412,
++	  11900, 11388, 10876, 10364,  9852,  9340,  8828,  8316,
++	   7932,  7676,  7420,  7164,  6908,  6652,  6396,  6140,
++	   5884,  5628,  5372,  5116,  4860,  4604,  4348,  4092,
++	   3900,  3772,  3644,  3516,  3388,  3260,  3132,  3004,
++	   2876,  2748,  2620,  2492,  2364,  2236,  2108,  1980,
++	   1884,  1820,  1756,  1692,  1628,  1564,  1500,  1436,
++	   1372,  1308,  1244,  1180,  1116,  1052,   988,   924,
++	    876,   844,   812,   780,   748,   716,   684,   652,
++	    620,   588,   556,   524,   492,   460,   428,   396,
++	    372,   356,   340,   324,   308,   292,   276,   260,
++	    244,   228,   212,   196,   180,   164,   148,   132,
++	    120,   112,   104,    96,    88,    80,    72,    64,
++	     56,    48,    40,    32,    24,    16,     8,     0};
++
++short sp_alaw_exp_table[256] = {
++	  -5504, -5248, -6016, -5760, -4480, -4224, -4992, -4736,
++	  -7552, -7296, -8064, -7808, -6528, -6272, -7040, -6784,
++	  -2752, -2624, -3008, -2880, -2240, -2112, -2496, -2368,
++	  -3776, -3648, -4032, -3904, -3264, -3136, -3520, -3392,
++	 -22016,-20992,-24064,-23040,-17920,-16896,-19968,-18944,
++	 -30208,-29184,-32256,-31232,-26112,-25088,-28160,-27136,
++	 -11008,-10496,-12032,-11520, -8960, -8448, -9984, -9472,
++	 -15104,-14592,-16128,-15616,-13056,-12544,-14080,-13568,
++	   -344,  -328,  -376,  -360,  -280,  -264,  -312,  -296,
++	   -472,  -456,  -504,  -488,  -408,  -392,  -440,  -424,
++	    -88,   -72,  -120,  -104,   -24,    -8,   -56,   -40,
++	   -216,  -200,  -248,  -232,  -152,  -136,  -184,  -168,
++	  -1376, -1312, -1504, -1440, -1120, -1056, -1248, -1184,
++	  -1888, -1824, -2016, -1952, -1632, -1568, -1760, -1696,
++	   -688,  -656,  -752,  -720,  -560,  -528,  -624,  -592,
++	   -944,  -912, -1008,  -976,  -816,  -784,  -880,  -848,
++	   5504,  5248,  6016,  5760,  4480,  4224,  4992,  4736,
++	   7552,  7296,  8064,  7808,  6528,  6272,  7040,  6784,
++	   2752,  2624,  3008,  2880,  2240,  2112,  2496,  2368,
++	   3776,  3648,  4032,  3904,  3264,  3136,  3520,  3392,
++	  22016, 20992, 24064, 23040, 17920, 16896, 19968, 18944,
++	  30208, 29184, 32256, 31232, 26112, 25088, 28160, 27136,
++	  11008, 10496, 12032, 11520,  8960,  8448,  9984,  9472,
++	  15104, 14592, 16128, 15616, 13056, 12544, 14080, 13568,
++	    344,   328,   376,   360,   280,   264,   312,   296,
++	    472,   456,   504,   488,   408,   392,   440,   424,
++	     88,    72,   120,   104,    24,     8,    56,    40,
++	    216,   200,   248,   232,   152,   136,   184,   168,
++	   1376,  1312,  1504,  1440,  1120,  1056,  1248,  1184,
++	   1888,  1824,  2016,  1952,  1632,  1568,  1760,  1696,
++	    688,   656,   752,   720,   560,   528,   624,   592,
++	    944,   912,  1008,   976,   816,   784,   880,   848};
++
++#ifdef __cplusplus
++}
++#endif
+--- /dev/null
++++ spro-5.0/spro/system.h
+@@ -0,0 +1,108 @@
++/******************************************************************************/
++/*                                                                            */
++/*                                system.h                                    */
++/*                                                                            */
++/*                               SPro Library                                 */
++/*                                                                            */
++/* Guig                                                             Sep. 2002 */
++/* -------------------------------------------------------------------------- */
++/*
++   $Author: guig $
++   $Date: 2010-11-09 16:57:22 +0100 (Tue, 09 Nov 2010) $
++   $Revision: 151 $
++*/
++/*  
++   Copyright (C) 1997-2010 Guillaume Gravier (guig@irisa.fr)
++
++   Permission is hereby granted, free of charge, to any person
++   obtaining a copy of this software and associated documentation
++   files (the "Software"), to deal in the Software without
++   restriction, including without limitation the rights to use, copy,
++   modify, merge, publish, distribute, sublicense, and/or sell copies
++   of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be
++   included in all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
++   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
++   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
++   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++   SOFTWARE.
++*/
++
++/*
++ * System dependent includes and defines.
++ */
++
++#ifndef _system_h_
++# define _system_h_
++
++# ifdef HAVE_CONFIG_H
++#  include <config.h>
++# endif
++
++# include <stdio.h>
++# include <stdint.h>
++
++/* stdlib stuff */
++# if STDC_HEADERS
++#  include <stdlib.h>
++#  include <stddef.h>
++#  include <stdarg.h>
++# else
++#  if HAVE_STDLIB_H
++#   include <stdlib.h>
++#  endif
++# endif
++
++# if defined STDC_HEADERS || defined _LIBC
++#   include <stdlib.h>
++# elif defined HAVE_MALLOC_H
++#   include <malloc.h>
++# endif
++
++# if HAVE_UNISTD_H
++#  include <unistd.h>
++# endif
++
++/* string stuff */
++# if HAVE_STRING_H
++#  if !STDC_HEADERS && HAVE_MEMORY_H
++#   include <memory.h>
++#  endif
++#  include <string.h>
++# endif
++
++/* mathematics */
++# if HAVE_MATH_H
++#  include <math.h>
++# endif
++
++/* limits */
++# if HAVE_LIMITS_H
++#  include <limits.h>
++# endif
++/* some systems (at least mine) do not define properly the following limits.... */
++# ifndef FLT_MIN
++#  define FLT_MIN 1.17549435E-38F
++# endif
++# ifndef FLT_MAX
++#  define FLT_MAX 3.40282347e+38F
++# endif
++# ifndef DBL_MIN
++#  define DBL_MIN 2.2250738585072014E-308
++# endif
++# ifndef DBL_MAX
++#  define DBL_MAX 1.7976931348623157E+308
++# endif
++
++# if HAVE_SYS_TYPES_H
++#  include <sys/types.h>
++# endif
++
++#endif /* _system_h_ */

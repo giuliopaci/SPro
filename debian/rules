@@ -12,4 +12,5 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/autotools.mk
 
 pre-build::
+	chmod 755 ./autogen.sh
 	./autogen.sh
