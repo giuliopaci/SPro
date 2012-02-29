@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
 Build-Depends: debhelper (>= 7.0.50~), cdbs, autotools-dev
 Standards-Version: 3.9.2
+Homepage: http://www.irisa.fr/metiss/guig/spro/
 
 Package: spro
 Architecture: any
