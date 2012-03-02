@@ -14,3 +14,23 @@ include /usr/share/cdbs/1/class/autotools.mk
 pre-build::
 	chmod 755 ./autogen.sh
 	./autogen.sh
+
+clean::
+	$(RM) \
+	Makefile.in \
+	aclocal.m4 \
+	auxdir/Makefile.in \
+	auxdir/depcomp \
+	auxdir/install-sh \
+	auxdir/mdate-sh \
+	auxdir/missing \
+	auxdir/texinfo.tex \
+	config.h.in \
+	configure \
+	doc/Makefile.in \
+	doc/spro.info \
+	doc/stamp-vti \
+	doc/version.texi \
+	test/Makefile.in \
+	test/dat/Makefile.in \
+	test/ref/Makefile.in

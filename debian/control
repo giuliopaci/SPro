@@ -2,7 +2,7 @@ Source: spro
 Section: misc
 Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
-Build-Depends: debhelper (>= 7.0.50~), cdbs, autotools-dev
+Build-Depends: debhelper (>= 7.0.50~), cdbs, autotools-dev, automake
 Standards-Version: 3.9.2
 Homepage: http://www.irisa.fr/metiss/guig/spro/
 
