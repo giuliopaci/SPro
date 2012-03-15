@@ -43,12 +43,11 @@ ACLOCAL_AMFLAGS = -I auxdir
 LDADD    = -lm -L. -lspro @sphere_lib@
 INCLUDES = @sphere_include@
 
-include_HEADERS = spro.h
+include_HEADERS = spro.h sptables.h
 lib_LIBRARIES = libspro.a
 noinst_HEADERS = gggetopt.h
-pkginclude_HEADERS = spro/system.h spro/sptables.h
 
-libspro_a_SOURCES = spro.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
+libspro_a_SOURCES = system.h spro.h sptables.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
 
 bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep splp
 noinst_PROGRAMS = scompare
@@ -75,4 +74,4 @@ scompare_SOURCES = scompare.c gggetopt.c
 scompare_DEPENDENCIES = libspro.a
 
 SUBDIRS = doc auxdir test
-EXTRA_DIST = README INSTALL COPYING CHANGES autogen.sh
+EXTRA_DIST = README INSTALL COPYING CHANGES

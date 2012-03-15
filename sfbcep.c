@@ -33,7 +33,7 @@
    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
- */
+*/
 
 /*
  * Convert speech input file to cepstral coefficients output feature file.
@@ -526,7 +526,7 @@ int read_args(int argc, char **argv)
     {"freq-min", required_argument, NULL, 'i'},
     {"freq-max", required_argument, NULL, 'u'},
     {"fft-length", required_argument, NULL, 'b'},
-    {"num-ceps", required_argument, NULL, 'p'},
+    {"num-cep", required_argument, NULL, 'p'},
     {"lifter", required_argument, NULL, 'r'},
     {"energy", no_argument, NULL, 'e'},
     {"scale-energy", required_argument, NULL, 's'},

@@ -38,7 +38,7 @@ AC_INIT(spro.h)
 AC_REVISION($Revision: 151 $)
 AC_PREREQ(2.12)
 AC_CONFIG_AUX_DIR(auxdir)
-AM_INIT_AUTOMAKE(spro, 5.0-papyrus)
+AM_INIT_AUTOMAKE(spro, 5.0)
 AM_CONFIG_HEADER(config.h:config.h.in)
 
 dnl Checks for usefuls programs (like a compiler, a precompiler, a linker...)
@@ -65,7 +65,6 @@ AC_TYPE_SIZE_T
 dnl defined sizeof standard types
 AC_CHECK_SIZEOF(char)
 AC_CHECK_SIZEOF(short)
-AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 
 dnl Checks for header files

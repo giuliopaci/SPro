@@ -33,7 +33,7 @@
    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
- */
+*/
 
 /*
  * Copy a data file doing the specified convertions. Also do file format
@@ -540,7 +540,7 @@ FILE *init_output(const char *ofn, unsigned long nsamples, unsigned short dim, l
   FILE *f;
 
   if (strcmp(ofn, "-")) {
-    if ((f = fopen(ofn, "wb")) == NULL)
+    if ((f = fopen(ofn, "w")) == NULL)
       return(NULL);
   }
   else
@@ -999,7 +999,7 @@ transmat_t *read_trans_mat(const char *fn)
   FILE *f;
   void free_trans_mat(transmat_t *);
 
-  if ((f = fopen(fn, "rb")) == NULL) {
+  if ((f = fopen(fn, "r")) == NULL) {
     fprintf(stderr, "scopy error -- cannot open transformation file %s\n", fn);
     return(NULL);
   }

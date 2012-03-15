@@ -33,7 +33,7 @@
    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
- */
+*/
 
 /*
  * FFT signal analysis.
@@ -53,7 +53,7 @@
 /* ----- FFT and DCT global variables ----- */
 /* ---------------------------------------- */
 static float *w1c = NULL, *w3c = NULL;
-static int *jx0 = NULL;
+static long *jx0 = NULL;
 static unsigned long _fftn = 0;
 static int _fftm = 0;
 static float *_fftbuf = NULL;
@@ -107,7 +107,7 @@ int fft_init(unsigned long npts)
       return(SPRO_ALLOC_ERR);
     }
     
-    if ((jx0 = (int *)realloc(jx0, npts * sizeof(int) / 3)) == NULL) {
+    if ((jx0 = (long *)realloc(jx0, npts * sizeof(long) / 3)) == NULL) {
       fprintf(stderr, "[SPro error %d] FFTInit(): cannot allocate FFT kernel", SPRO_ALLOC_ERR);
       free(_fftbuf); free(w1c); free(w3c);
       return(SPRO_ALLOC_ERR);

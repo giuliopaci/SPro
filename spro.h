@@ -33,7 +33,7 @@
    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
- */
+*/
 
 /*
  * SPro library header 
@@ -63,7 +63,7 @@
 extern "C" {
 # endif
 
-# include "spro/system.h"
+# include <system.h>
 
      /* ----------------------- */
      /* ----- error codes ----- */
@@ -175,11 +175,11 @@ typedef struct {
   float Fs;                     /* frame rate       
                           */
   unsigned short idim;          /* input dimension                            */
-  int32_t iflag;                   /* input stream description                   */
+  long iflag;                   /* input stream description                   */
   unsigned short odim;          /* output dimension                           */
-  int32_t oflag;                   /* output stream description                  */
+  long oflag;                   /* output stream description                  */
 
-  int32_t cflag;                   /* additionnal stream description             */
+  long cflag;                   /* additionnal stream description             */
   unsigned long winlen;         /* global processing window length            */
   float escale;                 /* energy scaling factor                      */
 
@@ -422,7 +422,7 @@ extern void sp_swap(void *, size_t);
 /* open feature stream in read mode  */
 spfstream_t *spf_input_stream_open(
   const char *,                 /* stream name                                */
-  int32_t,                         /* feature descriptors to add                 */
+  long,                         /* feature descriptors to add                 */
   size_t                        /* I/O buffer maximum size (in bytes)         */
 );
 
@@ -430,8 +430,8 @@ spfstream_t *spf_input_stream_open(
 spfstream_t *spf_output_stream_open(
   const char *,                 /* stream name                                */
   unsigned short,               /* feature dimension                          */
-  int32_t,                         /* input feature description flag             */
-  int32_t,                         /* feature descriptors to add                 */
+  long,                         /* input feature description flag             */
+  long,                         /* feature descriptors to add                 */
   float,                        /* frame sample rate in Hz                    */
   const struct spf_header_field *, /* NULL terminated name/value array        */
   size_t                        /* I/O buffer maximum size (in bytes)         */
@@ -481,13 +481,13 @@ spf_t *get_next_spf_frame(
 );
 
 /* convert a feature stream description string to binary flag  */
-int32_t sp_str_to_flag(
+long sp_str_to_flag(
   const char *                  /* data description string                    */
 );
 
 /* convert a feature stream description flag to string  */
 char *sp_flag_to_str(
-  int32_t,                         /* feature stream description                 */
+  long,                         /* feature stream description                 */
   char [7]                      /* output string                              */
 );
 

@@ -33,7 +33,7 @@
    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
- */
+*/
 
 /*
  * Signal I/O routines.
@@ -77,7 +77,7 @@
 #ifdef SPHERE
 # include <sp/sphere.h>
 #endif
-#include "spro/sptables.h"  /* -> for Alaw and ulaw conversions */
+#include <sptables.h>  /* -> for Alaw and ulaw conversions */
 
 /* --------------------------------------------- */
 /* ----- spsig_t *sig_alloc(unsigned long) ----- */
@@ -547,19 +547,19 @@ int sig_wave_stream_init(sigstream_t *f, const char *fn)
 {
   struct {
     char riff[4];                 /* String 'RIFF' without \0                */
-    int32_t totsize;                 /* Total file size - 8                     */
+    long totsize;                 /* Total file size - 8                     */
     char wave[4];                 /* String 'WAVE' without \0                */
     char fmtstr[4];               /* String 'fmt_' without \0                */
-    int32_t dum1;                    /* Length of format chunk (0x10)           */
+    long dum1;                    /* Length of format chunk (0x10)           */
     short dum2;                   /* Always 0x01                             */
     short numchans;               /* Number of channels                      */
-    int32_t Fs;                      /* Sample rate (in Hz)                     */
-    int32_t nbytespersec;            /* number of bytes/seconde                 */
+    long Fs;                      /* Sample rate (in Hz)                     */
+    long nbytespersec;            /* number of bytes/seconde                 */
     short nbytespersample;        /* number of bytes/sample                  */
     /* (1=8 bit mono, 2=8 bit stereo or 16 bit mono, 4= 16 bit stereo)   */
     short nbitspersample;         /* number of bits/samples                  */
     char data[4];                 /* string 'data' without \0                */
-    uint32_t datsize;        /* number of data bytes (not samples)      */
+    unsigned long datsize;        /* number of data bytes (not samples)      */
   } hdr;
 
   /* open input file */
@@ -585,9 +585,9 @@ int sig_wave_stream_init(sigstream_t *f, const char *fn)
   
   if (f->swap) {
     sp_swap(&(hdr.numchans), sizeof(short));
-    sp_swap(&(hdr.Fs), sizeof(hdr.Fs));
+    sp_swap(&(hdr.Fs), sizeof(long));
     sp_swap(&(hdr.nbytespersample), sizeof(short));
-    sp_swap(&(hdr.datsize), sizeof(hdr.datsize));
+    sp_swap(&(hdr.datsize), sizeof(long));
   }
 
   if (strncmp(hdr.riff, "RIFF", 4) != 0 || strncmp(hdr.wave, "WAVE", 4)) {
@@ -778,7 +778,7 @@ int get_next_sig_frame(sigstream_t *f, int ch, int l, int d, float a, sample_t *
 /* ----- double getsample(void *, unsigned long, unsigned short) ----- */
 /* ------------------------------------------------------------------- */
 /*
- * Return n'th sample value assuming m bytes samples. The sample will be rescaled to PCM Signed 16bit range.
+ * Return n'th sample value assuming m bytes samples.
  */
 double getsample(void *p, unsigned long n, unsigned short m)
 {
@@ -787,16 +787,12 @@ double getsample(void *p, unsigned long n, unsigned short m)
   switch(m) {
   case 1:
     v = (double)(*((char *)p+n));
-    v /= 255.0;
-    v *= 32677.0;
     break;
   case 2:
     v = (double)*((short *)p+n);
     break;
   case 4:
     v = (double)*((long *)p+n);
-    v /= 2147483647.0;
-    v *= 32677.0;
   default:
     v = 0.0;
   }
