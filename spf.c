@@ -419,7 +419,7 @@ spfstream_t *spf_input_stream_open(const char *fn, int32_t flag, size_t nbytes)
  * Open output feature stream. Return a pointer to the stream or NULL
  * in case of error.
  */
-spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, int32_t iflag, 
+spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, int32_t iflag,
 				    int32_t cflag, float frate, const struct spf_header_field *vh, size_t nbytes)
 {
   spfstream_t *s;
@@ -510,7 +510,7 @@ spfstream_t *spf_output_stream_open(const char *fn, unsigned short idim, int32_t
 #endif
   
   if (fwrite(&dim, SIZEOF_SHORT, 1, s->f) != 1 || 
-      fwrite(&flag, sizeof(flag), 1, s->f) != 1 || 
+      fwrite(&flag, sizeof(flag), 1, s->f) != 1 ||
       fwrite(&rate, sizeof(float), 1, s->f) != 1) {
     fprintf(stderr, "spf_output_stream_open() -- cannot write fixed header to %s\n", (fn) ? (fn) : "stdout"); 
     return(NULL);

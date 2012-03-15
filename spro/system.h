@@ -11,7 +11,7 @@
    $Date: 2010-11-09 16:57:22 +0100 (Tue, 09 Nov 2010) $
    $Revision: 151 $
 */
-/*  
+/*
    Copyright (C) 1997-2010 Guillaume Gravier (guig@irisa.fr)
 
    Permission is hereby granted, free of charge, to any person

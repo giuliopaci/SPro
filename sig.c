@@ -256,7 +256,7 @@ sigstream_t *sig_stream_open(const char *fn, int format, float Fs, size_t nbytes
     sig_stream_close(p);
     return(NULL);
   }
-  
+
   /* sanity check for malformed wave files */
   if (p->nchannels == 0 || p->nbps == 0 || p->Fs == 0.0) {
     fprintf(stderr, "sig_stream_open(): invalid header values in input signal stream %s (wrong format?)\n", (name) ? (name) : "stdin");
