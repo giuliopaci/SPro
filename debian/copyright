@@ -1,44 +1,36 @@
-This package was debianized by Giulio Paci <giuliopaci@gmail.com> on
-Tue, 8 Jul 2008 16:40:13 +0200.
+Format: http://www.debian.org/doc/copyright-format/1.0
+Upstream-Contact: Guillaume Gravier <ggravier@irisa.fr>
+Upstream-Name: spro
+Source: 
 
-Upstream Author: 
+Files: debian/*
+Copyright: 2008-2012 Giulio Paci <giuliopaci@gmail.com>
+License: MIT/X11
 
-    Guillaume Gravier <ggravier@irisa.fr>
-
+Files: *
+Copyright: 1997-2010 Guillaume Gravier <ggravier@irisa.fr>
     Other contributors in alphabetical order: Raphael Blouet, Pierre
     Duhamel, Johnny Mariethoz, Sylvain Meigner, Alexey Ozerov, Jacques
     Prado.
+License: MIT/X11
 
-Copyright: 
-
-    Copyright (C) 1997-2010 Guillaume Gravier.
-
-License:
-
-    SPro is distributed "as is" under the MIT License. See COPYING for
-    details on the license.
-
-    Permission is hereby granted, free of charge, to any person
-    obtaining a copy of this software and associated documentation
-    files (the "Software"), to deal in the Software without
-    restriction, including without limitation the rights to use, copy,
-    modify, merge, publish, distribute, sublicense, and/or sell copies
-    of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-    DEALINGS IN THE SOFTWARE.
-
-
-The Debian packaging is (C) 2008-2012, Giulio Paci <giuliopaci@gmail.com> and
-is licensed under the MIT license, see above.
-
+License: MIT/X11
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
