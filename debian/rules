@@ -6,32 +6,25 @@
 # use fakeroot debian/rules debian/control DEB_AUTO_UPDATE_DEBIAN_CONTROL:=yes
 
 DEB_TAR_SRCDIR := .
-DEB_CONFIGURE_EXTRA_FLAGS ?= 
+DEB_CONFIGURE_EXTRA_FLAGS ?=
 
 include /usr/share/cdbs/1/rules/utils.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/autotools.mk
 
+DEB_AUTO_UPDATE_ACLOCAL = 1.11 -I auxdir
+DEB_AUTO_UPDATE_AUTOMAKE = 1.11 --foreign --add-missing --copy
+DEB_AUTO_UPDATE_AUTOCONF = 1.11
+
+BACKUP=configure aclocal.m4 auxdir/Makefile.in Makefile.in config.h.in doc/Makefile.in doc/spro.info doc/stamp-vti doc/version.texi test/Makefile.in test/dat/Makefile.in test/ref/Makefile.in
+
 pre-build::
-	chmod 755 ./autogen.sh
-	./autogen.sh
+	# Backup files expected to be modified.
+	for i in $(BACKUP); do \
+		if [ ! -f "$$i".backup ]; then cp -a "$$i" "$$i".backup; fi ; \
+	done
 
 clean::
-	$(RM) \
-	Makefile.in \
-	aclocal.m4 \
-	auxdir/Makefile.in \
-	auxdir/depcomp \
-	auxdir/install-sh \
-	auxdir/mdate-sh \
-	auxdir/missing \
-	auxdir/texinfo.tex \
-	config.h.in \
-	configure \
-	doc/Makefile.in \
-	doc/spro.info \
-	doc/stamp-vti \
-	doc/version.texi \
-	test/Makefile.in \
-	test/dat/Makefile.in \
-	test/ref/Makefile.in
+	for i in $(BACKUP); do \
+		if [ -f "$$i".backup ]; then mv -f "$$i".backup "$$i"; fi ; \
+	done
