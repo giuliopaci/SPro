@@ -1,33 +1,82 @@
-Usage:
-    sfbank [options] ifile ofile
+.TH spro 1 March,\ 2012
 
-Synopsis:
-    Filter bank analysis of the input signal.
+.SH NAME
 
-Options:
-  -F, --format=s            input signal file format (pcm16)
-  -f, --sample-rate=n       signal sample rate for pcm16 input (8000.0 Hz)
-  -x, --channel=n           channel number (1)
-  -B, --swap                swap sample byte order (don't)
-  -I, --input-bufsize=n     input buffer size in kbytes (10000)
-  -O, --output-bufsize=n    output buffer size in kbytes (10000)
+sfbank \- Filter bank analysis
 
-  -k, --pre-emphasis=n      pre-emphasis coefficient (0.95)
-  -l, --length=n            frame length in ms (20.0 ms)
-  -d, --shift=n             frame shift in ms (10.0 ms)
-  -w, --window=s            weighting window (HAMMING)
+.SH SYNOPSIS
 
-  -n, --num-filter=n        number of filters in the filter-bank (24)
-  -a, --alpha=n             frequency warping parameter (0.0)
-  -m, --mel                 use MEL frequency scale (off)
-  -i, --freq-min=n          lower frequency bound (0 Hz)
-  -u, --freq-max=n          higher frequency bound (Fs/2)
-  -b, --fft-length=n        FFT length (512)
+\fBsfbank\fR [\fIOPTIONS\fR] \fIifile\fR \fIofile\fR
 
-  -D, --delta               add first order derivatives (no)
-  -A, --acceleration        add second order derivatives (no)
+Filter bank analysis of the input signal.
 
-  -v, --verbose             verbose mode
-  -V, --version             print version number
-  -h, --help                this help message
+.SH OPTIONS
+
+.TP
+
+\fB-F\fR, \fB--format\fR=<\fIstring\fR>            input signal file format (pcm16)
+.TP
+
+\fB-f\fR, \fB--sample-rate\fR=<\fIfloat\fR>       signal sample rate for pcm16 input (8000.0 Hz)
+.TP
+
+\fB-x\fR, \fB--channel\fR=<\fIint\fR>           channel number (1)
+.TP
+
+\fB-B\fR, \fB--swap\fR                swap sample byte order (don't)
+.TP
+
+\fB-I\fR, \fB--input-bufsize\fR=<\fIint\fR>     input buffer size in kbytes (10000)
+.TP
+
+\fB-O\fR, \fB--output-bufsize\fR=<\fIint\fR>    output buffer size in kbytes (10000)
+
+.TP
+
+\fB-k\fR, \fB--pre-emphasis\fR=<\fIfloat\fR>      pre-emphasis coefficient (0.95)
+.TP
+
+\fB-l\fR, \fB--length\fR=<\fIfloat\fR>            frame length in ms (20.0 ms)
+.TP
+
+\fB-d\fR, \fB--shift\fR=<\fIfloat\fR>             frame shift in ms (10.0 ms)
+.TP
+
+\fB-w\fR, \fB--window\fR=<\fIstring\fR>            weighting window (HAMMING)
+
+.TP
+
+\fB-n\fR, \fB--num-filter\fR=<\fIint\fR>        number of filters in the filter-bank (24)
+.TP
+
+\fB-a\fR, \fB--alpha\fR=<\fIfloat\fR>             frequency warping parameter (0.0)
+.TP
+
+\fB-m\fR, \fB--mel\fR                 use MEL frequency scale (off)
+.TP
+
+\fB-i\fR, \fB--freq-min\fR=<\fIfloat\fR>          lower frequency bound (0 Hz)
+.TP
+
+\fB-u\fR, \fB--freq-max\fR=<\fIfloat\fR>          higher frequency bound (Fs/2)
+.TP
+
+\fB-b\fR, \fB--fft-length\fR=<\fIint\fR>        FFT length (512)
+
+.TP
+
+\fB-D\fR, \fB--delta\fR               add first order derivatives (no)
+.TP
+
+\fB-A\fR, \fB--acceleration\fR        add second order derivatives (no)
+
+.TP
+
+\fB-v\fR, \fB--verbose\fR             verbose mode
+.TP
+
+\fB-V\fR, \fB--version\fR             print version number
+.TP
+
+\fB-h\fR, \fB--help\fR                this help message
 

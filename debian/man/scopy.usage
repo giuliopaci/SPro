@@ -1,34 +1,80 @@
+.TH spro 1 March,\ 2012
 
-Usage:
-    scopy [options] ifn ofn
+.SH NAME
 
-Synopsis:
-    copy input file to output file making necessary convertions.
+scopy \- Input feature file converter
 
-Options:
-  -c, --compatibility       input is in SPro 3.x file format (no)
-  -I, --bufsize=n           I/O buffer size in kbytes (10000)
-  -i, --info                print stream information (off)
-  -z, --suppress            suppress printing data (off)
-  -B, --swap                swap byte order before writing new file (no)
-  -o, --output-format=s     set output format (spro)
+.SH SYNOPSIS
+
+\fBscopy\fR [\fIOPTIONS\fR] \fIifile\fR \fIofile\fR
+
+Copy input feature file to output file making necessary convertions.
+
+.SH OPTIONS
+
+.TP
+
+\fB-c\fR, \fB--compatibility\fR       input is in SPro 3.x file format (no)
+.TP
+
+\fB-I\fR, \fB--bufsize\fR=<\fIint\fR>           I/O buffer size in kbytes (10000)
+.TP
+
+\fB-i\fR, \fB--info\fR                print stream information (off)
+.TP
+
+\fB-z\fR, \fB--suppress\fR            suppress printing data (off)
+.TP
+
+\fB-B\fR, \fB--swap\fR                swap byte order before writing new file (no)
+.TP
+
+\fB-o\fR, \fB--output-format\fR=<\fIstring\fR>     set output format (spro)
                             valid formats are: ascii, htk, sirocco
 
-  -Z, --cms                 cepstral mean normalization
-  -R, --normalize           variance normalization
-  -L, --segment-length=n    segment length in frames for normalization (whole data)
-  -D, --delta               add first order derivatives
-  -A, --acceleration        add second order derivatives
-  -N, --no-static-energy    remove static energy
+.TP
 
-  -m, --scale=f             scale features (no)
-  -t, --transform=fn        apply transformation matrix in fn (none)
-  -x, --extract=s           bin extraction pattern (none)
+\fB-Z\fR, \fB--cms\fR                 cepstral mean normalization
+.TP
 
-  -s, --start=n             starting at sample number (1)
-  -e, --end=n               ending at sample number (last)
+\fB-R\fR, \fB--normalize\fR           variance normalization
+.TP
 
-  -v, --verbose             verbose mode
-  -V, --version             print version number
-  -h, --help                this help message
+\fB-L\fR, \fB--segment-length\fR=<\fIint\fR>    segment length in frames for normalization (whole data)
+.TP
+
+\fB-D\fR, \fB--delta\fR               add first order derivatives
+.TP
+
+\fB-A\fR, \fB--acceleration\fR        add second order derivatives
+.TP
+
+\fB-N\fR, \fB--no-static-energy\fR    remove static energy
+
+.TP
+
+\fB-m\fR, \fB--scale\fR=<\fIfloat\fR>             scale features (no)
+.TP
+
+\fB-t\fR, \fB--transform\fR=<\file\fR>        apply transformation matrix in file (none)
+.TP
+
+\fB-x\fR, \fB--extract\fR=<\fIstring\fR>           bin extraction pattern (none)
+
+.TP
+
+\fB-s\fR, \fB--start\fR=<\fIint\fR>             starting at sample number (1)
+.TP
+
+\fB-e\fR, \fB--end\fR=<\fIint\fR>               ending at sample number (last)
+
+.TP
+
+\fB-v\fR, \fB--verbose\fR             verbose mode
+.TP
+
+\fB-V\fR, \fB--version\fR             print version number
+.TP
+
+\fB-h\fR, \fB--help\fR                this help message
 

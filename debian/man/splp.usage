@@ -2,13 +2,13 @@
 
 .SH NAME
 
-slpc \- Variable resolution AR modelling
+splp \- Filter bank analysis
 
 .SH SYNOPSIS
 
-\fBslpc\fR [\fIOPTIONS\fR] \fIifile\fR \fIofile\fR
+\fBsplp\fR [\fIOPTIONS\fR] \fIifile\fR \fIofile\fR
 
-Variable resolution AR modelling of the input signal.
+Filter bank analysis of the input signal.
 
 .SH OPTIONS
 
@@ -30,6 +30,9 @@ Variable resolution AR modelling of the input signal.
 .TP
 
 \fB-O\fR, \fB--output-bufsize\fR=<\fIint\fR>    output buffer size in kbytes (10000)
+.TP
+
+\fB-H\fR, \fB--header\fR              output variable length header (don't)
 
 .TP
 
@@ -46,19 +49,36 @@ Variable resolution AR modelling of the input signal.
 
 .TP
 
-\fB-n\fR, \fB--order\fR=<\fIint\fR>             LPC analysis order (12)
+\fB-n\fR, \fB--num-filter\fR=<\fIint\fR>        number of filters in the filter-bank (24)
 .TP
 
 \fB-a\fR, \fB--alpha\fR=<\fIfloat\fR>             frequency warping parameter (0.0)
 .TP
 
-\fB-r\fR, \fB--parcor\fR              output reflexion coefficients (LPC)
+\fB-m\fR, \fB--mel\fR                 use MEL frequency scale (off)
 .TP
 
-\fB-g\fR, \fB--lar\fR                 output log area ratios (LPC)
+\fB-i\fR, \fB--freq-min\fR=<\fIfloat\fR>          lower frequency bound (0 Hz)
 .TP
 
-\fB-p\fR, \fB--lsp\fR                 output line spectrum frequencies (LPC)
+\fB-u\fR, \fB--freq-max\fR=<\fIfloat\fR>          higher frequency bound (Fs/2)
+.TP
+
+\fB-b\fR, \fB--fft-length\fR=<\fIint\fR>        FFT length (512)
+.TP
+
+\fB-c\fR, \fB--compress\fR=<\fIfloat\fR>          power spectrum compressions factor (3.00)
+
+.TP
+
+\fB-q\fR, \fB--order\fR=<\fIint\fR>             LPC analysis order (12)
+
+.TP
+
+\fB-p\fR, \fB--num-ceps\fR=<\fIint\fR>          number of cepstral coefficients (12)
+.TP
+
+\fB-r\fR, \fB--lifter\fR=<\fIfloat\fR>            liftering value (0)
 
 .TP
 
@@ -69,14 +89,29 @@ Variable resolution AR modelling of the input signal.
 
 .TP
 
+\fB-Z\fR, \fB--cms\fR                 cepstral mean normalization
+.TP
+
+\fB-R\fR, \fB--normalize\fR           variance normalization
+.TP
+
 \fB-L\fR, \fB--segment-length\fR=<\fIint\fR>    segment length in frames for normalization (whole data)
+.TP
+
+\fB-D\fR, \fB--delta\fR               add first order derivatives (no)
+.TP
+
+\fB-A\fR, \fB--acceleration\fR        add second order derivatives (no)
+.TP
+
+\fB-N\fR, \fB--no-static-energy\fR    remove static energy
 
 .TP
 
 \fB-v\fR, \fB--verbose\fR             verbose mode
 .TP
 
-\fB-V\fR, \fB--version\fR             print version number and exit
+\fB-V\fR, \fB--version\fR             print version number
 .TP
 
 \fB-h\fR, \fB--help\fR                this help message
