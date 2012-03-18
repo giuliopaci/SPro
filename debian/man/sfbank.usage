@@ -14,69 +14,89 @@ Filter bank analysis of the input signal.
 
 .TP
 
-\fB-F\fR, \fB--format\fR=<\fIstring\fR>            input signal file format (pcm16)
+\fB-F\fR, \fB--format\fR=<\fIstring\fR>
+input signal file format (pcm16)
 .TP
 
-\fB-f\fR, \fB--sample-rate\fR=<\fIfloat\fR>       signal sample rate for pcm16 input (8000.0 Hz)
+\fB-f\fR, \fB--sample-rate\fR=<\fIfloat\fR>
+signal sample rate for pcm16 input (8000.0 Hz)
 .TP
 
-\fB-x\fR, \fB--channel\fR=<\fIint\fR>           channel number (1)
+\fB-x\fR, \fB--channel\fR=<\fIint\fR>
+channel number (1)
 .TP
 
-\fB-B\fR, \fB--swap\fR                swap sample byte order (don't)
+\fB-B\fR, \fB--swap\fR
+swap sample byte order (don't)
 .TP
 
-\fB-I\fR, \fB--input-bufsize\fR=<\fIint\fR>     input buffer size in kbytes (10000)
+\fB-I\fR, \fB--input-bufsize\fR=<\fIint\fR>
+input buffer size in kbytes (10000)
 .TP
 
-\fB-O\fR, \fB--output-bufsize\fR=<\fIint\fR>    output buffer size in kbytes (10000)
-
-.TP
-
-\fB-k\fR, \fB--pre-emphasis\fR=<\fIfloat\fR>      pre-emphasis coefficient (0.95)
-.TP
-
-\fB-l\fR, \fB--length\fR=<\fIfloat\fR>            frame length in ms (20.0 ms)
-.TP
-
-\fB-d\fR, \fB--shift\fR=<\fIfloat\fR>             frame shift in ms (10.0 ms)
-.TP
-
-\fB-w\fR, \fB--window\fR=<\fIstring\fR>            weighting window (HAMMING)
+\fB-O\fR, \fB--output-bufsize\fR=<\fIint\fR>
+output buffer size in kbytes (10000)
 
 .TP
 
-\fB-n\fR, \fB--num-filter\fR=<\fIint\fR>        number of filters in the filter-bank (24)
+\fB-k\fR, \fB--pre-emphasis\fR=<\fIfloat\fR>
+pre-emphasis coefficient (0.95)
 .TP
 
-\fB-a\fR, \fB--alpha\fR=<\fIfloat\fR>             frequency warping parameter (0.0)
+\fB-l\fR, \fB--length\fR=<\fIfloat\fR>
+frame length in ms (20.0 ms)
 .TP
 
-\fB-m\fR, \fB--mel\fR                 use MEL frequency scale (off)
+\fB-d\fR, \fB--shift\fR=<\fIfloat\fR>
+frame shift in ms (10.0 ms)
 .TP
 
-\fB-i\fR, \fB--freq-min\fR=<\fIfloat\fR>          lower frequency bound (0 Hz)
-.TP
-
-\fB-u\fR, \fB--freq-max\fR=<\fIfloat\fR>          higher frequency bound (Fs/2)
-.TP
-
-\fB-b\fR, \fB--fft-length\fR=<\fIint\fR>        FFT length (512)
-
-.TP
-
-\fB-D\fR, \fB--delta\fR               add first order derivatives (no)
-.TP
-
-\fB-A\fR, \fB--acceleration\fR        add second order derivatives (no)
+\fB-w\fR, \fB--window\fR=<\fIstring\fR>
+weighting window (HAMMING)
 
 .TP
 
-\fB-v\fR, \fB--verbose\fR             verbose mode
+\fB-n\fR, \fB--num-filter\fR=<\fIint\fR>
+number of filters in the filter-bank (24)
 .TP
 
-\fB-V\fR, \fB--version\fR             print version number
+\fB-a\fR, \fB--alpha\fR=<\fIfloat\fR>
+frequency warping parameter (0.0)
 .TP
 
-\fB-h\fR, \fB--help\fR                this help message
+\fB-m\fR, \fB--mel\fR
+use MEL frequency scale (off)
+.TP
 
+\fB-i\fR, \fB--freq-min\fR=<\fIfloat\fR>
+lower frequency bound (0 Hz)
+.TP
+
+\fB-u\fR, \fB--freq-max\fR=<\fIfloat\fR>
+higher frequency bound (Fs/2)
+.TP
+
+\fB-b\fR, \fB--fft-length\fR=<\fIint\fR>
+FFT length (512)
+
+.TP
+
+\fB-D\fR, \fB--delta\fR
+add first order derivatives (no)
+.TP
+
+\fB-A\fR, \fB--acceleration\fR
+add second order derivatives (no)
+
+.TP
+
+\fB-v\fR, \fB--verbose\fR
+verbose mode
+.TP
+
+\fB-V\fR, \fB--version\fR
+print version number
+.TP
+
+\fB-h\fR, \fB--help\fR
+this help message

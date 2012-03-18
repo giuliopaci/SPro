@@ -14,67 +14,86 @@ Copy input feature file to output file making necessary convertions.
 
 .TP
 
-\fB-c\fR, \fB--compatibility\fR       input is in SPro 3.x file format (no)
+\fB-c\fR, \fB--compatibility\fR
+input is in SPro 3.x file format (no)
 .TP
 
-\fB-I\fR, \fB--bufsize\fR=<\fIint\fR>           I/O buffer size in kbytes (10000)
+\fB-I\fR, \fB--bufsize\fR=<\fIint\fR>
+I/O buffer size in kbytes (10000)
 .TP
 
-\fB-i\fR, \fB--info\fR                print stream information (off)
+\fB-i\fR, \fB--info\fR
+print stream information (off)
 .TP
 
-\fB-z\fR, \fB--suppress\fR            suppress printing data (off)
+\fB-z\fR, \fB--suppress\fR
+suppress printing data (off)
 .TP
 
-\fB-B\fR, \fB--swap\fR                swap byte order before writing new file (no)
+\fB-B\fR, \fB--swap\fR
+swap byte order before writing new file (no)
 .TP
 
-\fB-o\fR, \fB--output-format\fR=<\fIstring\fR>     set output format (spro)
-                            valid formats are: ascii, htk, sirocco
-
-.TP
-
-\fB-Z\fR, \fB--cms\fR                 cepstral mean normalization
-.TP
-
-\fB-R\fR, \fB--normalize\fR           variance normalization
-.TP
-
-\fB-L\fR, \fB--segment-length\fR=<\fIint\fR>    segment length in frames for normalization (whole data)
-.TP
-
-\fB-D\fR, \fB--delta\fR               add first order derivatives
-.TP
-
-\fB-A\fR, \fB--acceleration\fR        add second order derivatives
-.TP
-
-\fB-N\fR, \fB--no-static-energy\fR    remove static energy
+\fB-o\fR, \fB--output-format\fR=<\fIstring\fR>
+set output format (spro)
+valid formats are: ascii, htk, sirocco
 
 .TP
 
-\fB-m\fR, \fB--scale\fR=<\fIfloat\fR>             scale features (no)
+\fB-Z\fR, \fB--cms\fR
+cepstral mean normalization
 .TP
 
-\fB-t\fR, \fB--transform\fR=<\file\fR>        apply transformation matrix in file (none)
+\fB-R\fR, \fB--normalize\fR
+variance normalization
 .TP
 
-\fB-x\fR, \fB--extract\fR=<\fIstring\fR>           bin extraction pattern (none)
+\fB-L\fR, \fB--segment-length\fR=<\fIint\fR>
+segment length in frames for normalization (whole data)
+.TP
+
+\fB-D\fR, \fB--delta\fR
+add first order derivatives
+.TP
+
+\fB-A\fR, \fB--acceleration\fR
+add second order derivatives
+.TP
+
+\fB-N\fR, \fB--no-static-energy\fR
+remove static energy
 
 .TP
 
-\fB-s\fR, \fB--start\fR=<\fIint\fR>             starting at sample number (1)
+\fB-m\fR, \fB--scale\fR=<\fIfloat\fR>
+scale features (no)
 .TP
 
-\fB-e\fR, \fB--end\fR=<\fIint\fR>               ending at sample number (last)
+\fB-t\fR, \fB--transform\fR=<\file\fR>
+apply transformation matrix in file (none)
+.TP
+
+\fB-x\fR, \fB--extract\fR=<\fIstring\fR>
+bin extraction pattern (none)
 
 .TP
 
-\fB-v\fR, \fB--verbose\fR             verbose mode
+\fB-s\fR, \fB--start\fR=<\fIint\fR>
+starting at sample number (1)
 .TP
 
-\fB-V\fR, \fB--version\fR             print version number
+\fB-e\fR, \fB--end\fR=<\fIint\fR>
+ending at sample number (last)
+
 .TP
 
-\fB-h\fR, \fB--help\fR                this help message
+\fB-v\fR, \fB--verbose\fR
+verbose mode
+.TP
 
+\fB-V\fR, \fB--version\fR
+print version number
+.TP
+
+\fB-h\fR, \fB--help\fR
+this help message
