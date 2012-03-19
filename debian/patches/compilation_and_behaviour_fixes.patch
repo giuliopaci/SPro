@@ -254,7 +254,7 @@ Index: b/scopy.c
 ===================================================================
 --- a/scopy.c
 +++ b/scopy.c
-@@ -33,7 +33,7 @@
+@@ -33,13 +33,13 @@
     ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
@@ -262,7 +262,52 @@ Index: b/scopy.c
 + */
  
  /*
-  * Copy a data file doing the specified convertions. Also do file format
+- * Copy a data file doing the specified convertions. Also do file format
+- * convertion to export datafiles to HTK or Sirocco.
++ * Copy a data file doing the specified conversions. Also do file format
++ * conversion to export datafiles to HTK or Sirocco.
+  *
+- * Possible convertions are, in their order of processing:
++ * Possible conversions are, in their order of processing:
+  *
+  *   - delta computation, mean normalization (ZRDAN coercion)
+  *   - multiplicative scaling
+@@ -55,7 +55,7 @@
+  *   A[nrows-1][0]            .........   A[nrows-1][ncolumns-1]
+  *
+  * The --info option makes it possible to only see the content of
+- * the header *after* the convertions.
++ * the header *after* the conversions.
+  *
+  * Warning: to ensure compatibility with previous SPro 3.x format and
+  * to enable export to other formats (obviously not designed for very
+@@ -92,7 +92,7 @@
+ size_t bufsize = 10000000;        /* I/O buffer size (in bytes)               */
+ int with_header = 0;              /* output variable length header            */
+ unsigned long winlen = 0;         /* normalization window length              */
+-long flag = 0;                    /* feature additionnal streams              */
++long flag = 0;                    /* feature additional streams              */
+ int compat = 0;                   /* import from SPro 3.x                     */
+ int trace = 0;                    /* trace level                              */
+ 
+@@ -105,7 +105,7 @@
+   fprintf(stdout, "    scopy [options] ifn ofn\n");
+   fprintf(stdout, "\n");
+   fprintf(stdout, "Synopsis:\n");
+-  fprintf(stdout, "    copy input file to output file making necessary convertions.\n");
++  fprintf(stdout, "    copy input file to output file making necessary conversions.\n");
+   fprintf(stdout, "\n");
+   fprintf(stdout, "Options:\n");
+   fprintf(stdout, "  -c, --compatibility       input is in SPro 3.x file format (no)\n");
+@@ -330,7 +330,7 @@
+       return(SPRO_STREAM_OPEN_ERR);
+     }
+       
+-    /* while input, run convertions and write */
++    /* while input, run conversions and write */
+     while (1) {
+       
+       if (! compat)
 @@ -540,7 +540,7 @@
    FILE *f;
  
@@ -272,6 +317,15 @@ Index: b/scopy.c
        return(NULL);
    }
    else
+@@ -627,7 +627,7 @@
+     }
+   }
+   else if (strcasecmp(ofmt, "ascii") != 0) {
+-    fprintf(stderr, "scopy error -- unkown output format %s\n", ofmt);
++    fprintf(stderr, "scopy error -- unknown output format %s\n", ofmt);
+     if (f != stdout) fclose(f);
+     return(NULL);
+   }
 @@ -999,7 +999,7 @@
    FILE *f;
    void free_trans_mat(transmat_t *);

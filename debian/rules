@@ -24,7 +24,14 @@ pre-build::
 		if [ ! -f "$$i".backup ]; then cp -a "$$i" "$$i".backup; fi ; \
 	done
 
+common-install-prehook-impl::
+	make -C doc spro.pdf
+
+binary-post-install/spro::
+	$(RM) debian/$(cdbs_curpkg)/usr/share/info/dir
+
 clean::
 	for i in $(BACKUP); do \
 		if [ -f "$$i".backup ]; then mv -f "$$i".backup "$$i"; fi ; \
 	done
+	$(RM) doc/spro.pdf

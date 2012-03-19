@@ -1,0 +1,10 @@
+Document: spro
+Title: SPro Manual
+Author: Guillaume Gravier
+Abstract: This manual describes what SPro is
+ and how it can be used. It also gives insights about the signal
+ processing theory behind this toolkit.
+Section: Programming
+
+Format: PDF
+Files: /usr/share/doc/spro/spro.pdf.gz
