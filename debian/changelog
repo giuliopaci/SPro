@@ -1,8 +1,8 @@
 spro (5.0-1) unstable; urgency=low
 
-  * New upstream release.
+  * New upstream release. (Closes: #664803).
 
- -- Giulio Paci <giuliopaci@gmail.com>  Thu, 15 Mar 2012 10:32:35 +0100
+ -- Giulio Paci <giuliopaci@gmail.com>  Wed, 21 Mar 2012 00:35:51 +0100
 
 spro (4.0.2) UNRELEASED; urgency=low
 

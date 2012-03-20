@@ -4,12 +4,12 @@ Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
 Build-Depends: debhelper (>= 7.0.50~), cdbs, autotools-dev, automake
 Standards-Version: 3.9.3
-Homepage: http://www.irisa.fr/metiss/guig/spro/
+Homepage: http://spro.gforge.inria.fr/
 
 Package: spro
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, dpkg (>= 1.15.4) | install-info
-Description: Speech signal processing toolkit for standard feature extraction
+Description: Speech signal processing toolkit for feature extraction
  SPro is a free speech signal processing toolkit which provides runtime
  commands implementing standard feature extraction algorithms for speech
  related applications and a C library to implement new algorithms and to

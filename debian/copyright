@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/copyright-format/1.0
-Upstream-Contact: Guillaume Gravier <ggravier@irisa.fr>
+Upstream-Contact: Guillaume Gravier <guillaume.gravier@irisa.fr>
 Upstream-Name: spro
-Source: http://www.irisa.fr/metiss/guig/spro/
+Source: http://spro.gforge.inria.fr/
 
 Files: debian/*
 Copyright: 2008-2012 Giulio Paci <giuliopaci@gmail.com>
