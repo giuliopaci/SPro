@@ -1,0 +1,11 @@
+The Debian version of the SPro toolkit is almost identical to the
+original one, except for:
+
+1) some BUG fixing that allows building and execution on 64bit
+   platforms, Mac OSX and MS Windows (using MinGW or Cygwin).
+
+2) 8bit and 32bit PCM input files are scaled to 16bit while
+   reading. 16bit PCM is a sort of standard for speech processing:
+   parameters, models, algorithms' implementations, etc. are usually
+   targeted to 16bit PCM input. Scaling input to 16bit grants the same
+   behaviour of the feature extraction for 8bit and 32bit files.
