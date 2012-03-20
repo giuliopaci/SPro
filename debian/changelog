@@ -4,7 +4,7 @@ spro (5.0-1) unstable; urgency=low
 
  -- Giulio Paci <giuliopaci@gmail.com>  Thu, 15 Mar 2012 10:32:35 +0100
 
-spro (4.0.2-cineca) UNRELEASED; urgency=low
+spro (4.0.2) UNRELEASED; urgency=low
 
   * Input file are always scaled to 16bit signed PCM.
   * Fixed a lot of amd64 issues.
