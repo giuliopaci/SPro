@@ -1,0 +1,2 @@
+  * Split package into binaries, development library and documentation
+  * Add .pc and .vapi files
