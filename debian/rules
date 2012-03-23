@@ -1,16 +1,11 @@
 #!/usr/bin/make -f
 
-# commented becouse dangerous, see
-# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%23311724
-# DEB_AUTO_UPDATE_DEBIAN_CONTROL := yes 
-# use fakeroot debian/rules debian/control DEB_AUTO_UPDATE_DEBIAN_CONTROL:=yes
+include /usr/share/cdbs/1/rules/upstream-tarball.mk
+include /usr/share/cdbs/1/rules/utils.mk
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
 
 DEB_TAR_SRCDIR := .
-DEB_CONFIGURE_EXTRA_FLAGS ?=
-
-include /usr/share/cdbs/1/rules/utils.mk
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/autotools.mk
 
 DEB_AUTO_UPDATE_ACLOCAL = 1.11 -I auxdir
 DEB_AUTO_UPDATE_AUTOMAKE = 1.11 --foreign --add-missing --copy
@@ -35,3 +30,6 @@ clean::
 		if [ -f "$$i".backup ]; then mv -f "$$i".backup "$$i"; fi ; \
 	done
 	$(RM) doc/spro.pdf
+
+# Needed by upstream build process
+CDBS_BUILD_DEPENDS +=
