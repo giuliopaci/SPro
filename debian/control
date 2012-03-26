@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
 Build-Depends: cdbs (>= 0.4.70~),
  devscripts,
- automake,
+ automake1.11,
  autoconf,
  debhelper,
  dh-buildinfo
