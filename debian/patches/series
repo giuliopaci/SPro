@@ -2,3 +2,4 @@ compilation_and_behaviour_fixes.patch
 
 documentation_fixes.patch
 developers_files.patch
+shared_library.patch

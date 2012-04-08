@@ -7,6 +7,7 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 
 DEB_TAR_SRCDIR := .
 
+DEB_AUTO_UPDATE_LIBTOOL = pre
 DEB_AUTO_UPDATE_ACLOCAL = 1.11
 DEB_ACLOCAL_ARGS = -I auxdir
 DEB_AUTO_UPDATE_AUTOMAKE = 1.11
@@ -28,11 +29,14 @@ common-install-prehook-impl::
 
 binary-post-install/spro::
 	$(RM) debian/$(cdbs_curpkg)/usr/share/info/dir
+	sed -e "s/^dependency_libs.*/dependency_libs=''\n#&/g" -i debian/$(cdbs_curpkg)/usr/lib/libspro.la
 
 clean::
 	for i in $(BACKUP); do \
 		if [ -f "$$i".backup ]; then mv -f "$$i".backup "$$i"; fi ; \
 	done
+	$(RM) auxdir/ltmain.sh auxdir/compile auxdir/config.sub auxdir/config.guess auxdir/libtool.m4 auxdir/ltoptions.m4 auxdir/ltsugar.m4 auxdir/ltversion.m4 auxdir/lt~obsolete.m4
+
 	$(RM) doc/spro.pdf
 
 # Needed by upstream build process

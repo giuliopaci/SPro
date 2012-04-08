@@ -17,7 +17,7 @@ Forwarded: no
 +Description: Speech signal processing toolkit for feature extraction
 +Version: @VERSION@
 +Requires:
-+Libs: -L${libdir} -lspro
++Libs: -L${libdir} -lspro -lm
 +Cflags: -I${includedir}/spro/
 +
 --- a/Makefile.am

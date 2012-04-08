@@ -1,0 +1,69 @@
+Description: allows libspro shared library compilation
+Author: Giulio Paci <giuliopaci@gmail.com>
+Forwarded: no
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -40,39 +40,41 @@
+ 
+ ACLOCAL_AMFLAGS = -I auxdir
+ 
+-LDADD    = -lm -L. -lspro @sphere_lib@
++LDADD    = -lm @sphere_lib@
+ INCLUDES = @sphere_include@
+ 
+ include_HEADERS = spro.h
+-lib_LIBRARIES = libspro.a
++lib_LTLIBRARIES = libspro.la
+ noinst_HEADERS = gggetopt.h
+ pkginclude_HEADERS = spro/system.h spro/sptables.h
+ 
+-libspro_a_SOURCES = spro.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
++libspro_la_SOURCES = spro.h sig.c spf.c header.c misc.c lpc.c convert.c fft.c
++
++libspro_la_LIBADD = -lm
+ 
+ bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep splp
+ noinst_PROGRAMS = scompare
+ 
+ scopy_SOURCES = scopy.c gggetopt.c
+-scopy_DEPENDENCIES = libspro.a
++scopy_LDADD = libspro.la
+ 
+ slpc_SOURCES = slpc.c gggetopt.c
+-slpc_DEPENDENCIES = libspro.a
++slpc_LDADD = libspro.la
+ 
+ slpcep_SOURCES = slpcep.c gggetopt.c
+-slpcep_DEPENDENCIES = libspro.a
++slpcep_LDADD = libspro.la
+ 
+ sfbank_SOURCES = sfbank.c gggetopt.c
+-sfbank_DEPENDENCIES = libspro.a
++sfbank_LDADD = libspro.la
+ 
+ sfbcep_SOURCES = sfbcep.c gggetopt.c
+-sfbcep_DEPENDENCIES = libspro.a
++sfbcep_LDADD = libspro.la
+ 
+ splp_SOURCES = splp.c gggetopt.c
+-splp_DEPENDENCIES = libspro.a
++splp_LDADD = libspro.la
+ 
+ scompare_SOURCES = scompare.c gggetopt.c
+-scompare_DEPENDENCIES = libspro.a
++scompare_LDADD = libspro.la
+ 
+ SUBDIRS = doc auxdir test
+ EXTRA_DIST = README INSTALL COPYING CHANGES
+--- a/configure.in
++++ b/configure.in
+@@ -68,6 +68,9 @@
+ AC_CHECK_SIZEOF(int)
+ AC_CHECK_SIZEOF(long)
+ 
++AC_LIBTOOL_WIN32_DLL
++AC_PROG_LIBTOOL
++
+ dnl Checks for header files
+ AC_HEADER_STDC
+ AC_HEADER_TIME
