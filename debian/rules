@@ -15,7 +15,7 @@ DEB_AUTO_UPDATE_AUTOCONF = 2.68
 
 BACKUP=configure aclocal.m4 auxdir/Makefile.in Makefile.in config.h.in doc/Makefile.in doc/spro.info doc/stamp-vti doc/version.texi test/Makefile.in test/dat/Makefile.in test/ref/Makefile.in
 
-DEB_COPYRIGHT_CHECK_IGNORE_REGEX := ^debian/(changelog|copyright(|_hints|_newhints))$$|^doc/.*[.](pdf|jpg|eps)$$|^test/.*[.](1|lfcc|lin)$$
+DEB_COPYRIGHT_CHECK_IGNORE_REGEX := ^debian/(changelog|copyright(|_hints|_newhints))$$|^doc/.*[.](pdf|jpg|eps|gif|png)$$|^test/.*[.](1|lfcc|lin)$$
 
 pre-build::
 	# Backup files expected to be modified.
