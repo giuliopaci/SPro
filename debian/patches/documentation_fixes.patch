@@ -1,10 +1,6 @@
 Description: Small fixes to spro documentation
 Author: Giulio Paci <giuliopaci@gmail.com>
 Forwarded: no
----
-This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
-Index: b/doc/spro.texi
-===================================================================
 --- a/doc/spro.texi
 +++ b/doc/spro.texi
 @@ -11,6 +11,13 @@

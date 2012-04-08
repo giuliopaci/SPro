@@ -6,27 +6,8 @@ Description: Compilation and behaviour fixes.
  features evaluated on those files can be compared with features
  evaluated on 16bit PCM files (8bit and 32bit files are scaled before
  features estimation).
- .
- spro (5.0-1) unstable; urgency=low
- .
-   * New upstream release.
 Author: Giulio Paci <giuliopaci@gmail.com>
-
----
-The information above should follow the Patch Tagging Guidelines, please
-checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
-are templates for supplementary fields that you might want to add:
-
-Origin: <vendor|upstream|other>, <url of original patch>
-Bug: <url in upstream bugtracker>
-Bug-Debian: http://bugs.debian.org/<bugnumber>
-Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
-Forwarded: <no|not-needed|url proving that it has been forwarded>
-Reviewed-By: <name and email of someone who approved the patch>
-Last-Update: <YYYY-MM-DD>
-
-Index: b/fft.c
-===================================================================
+Forwarded: no
 --- a/fft.c
 +++ b/fft.c
 @@ -33,7 +33,7 @@
@@ -56,8 +37,6 @@ Index: b/fft.c
        fprintf(stderr, "[SPro error %d] FFTInit(): cannot allocate FFT kernel", SPRO_ALLOC_ERR);
        free(_fftbuf); free(w1c); free(w3c);
        return(SPRO_ALLOC_ERR);
-Index: b/sig.c
-===================================================================
 --- a/sig.c
 +++ b/sig.c
 @@ -33,7 +33,7 @@
@@ -141,8 +120,6 @@ Index: b/sig.c
    default:
      v = 0.0;
    }
-Index: b/spf.c
-===================================================================
 --- a/spf.c
 +++ b/spf.c
 @@ -33,7 +33,7 @@
@@ -250,8 +227,6 @@ Index: b/spf.c
  {
    char *p = str;
  
-Index: b/scopy.c
-===================================================================
 --- a/scopy.c
 +++ b/scopy.c
 @@ -33,13 +33,13 @@
@@ -335,8 +310,6 @@ Index: b/scopy.c
      fprintf(stderr, "scopy error -- cannot open transformation file %s\n", fn);
      return(NULL);
    }
-Index: b/configure.in
-===================================================================
 --- a/configure.in
 +++ b/configure.in
 @@ -65,6 +65,7 @@
@@ -347,8 +320,6 @@ Index: b/configure.in
  AC_CHECK_SIZEOF(long)
  
  dnl Checks for header files
-Index: b/Makefile.am
-===================================================================
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -43,11 +43,12 @@
@@ -366,8 +337,6 @@ Index: b/Makefile.am
  
  bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep splp
  noinst_PROGRAMS = scompare
-Index: b/sfbcep.c
-===================================================================
 --- a/sfbcep.c
 +++ b/sfbcep.c
 @@ -33,7 +33,7 @@
@@ -388,8 +357,6 @@ Index: b/sfbcep.c
      {"lifter", required_argument, NULL, 'r'},
      {"energy", no_argument, NULL, 'e'},
      {"scale-energy", required_argument, NULL, 's'},
-Index: b/spro.h
-===================================================================
 --- a/spro.h
 +++ b/spro.h
 @@ -33,7 +33,7 @@
@@ -461,8 +428,6 @@ Index: b/spro.h
    char [7]                      /* output string                              */
  );
  
-Index: b/spro/sptables.h
-===================================================================
 --- /dev/null
 +++ b/spro/sptables.h
 @@ -0,0 +1,81 @@
@@ -547,8 +512,6 @@ Index: b/spro/sptables.h
 +#ifdef __cplusplus
 +}
 +#endif
-Index: b/spro/system.h
-===================================================================
 --- /dev/null
 +++ b/spro/system.h
 @@ -0,0 +1,108 @@
@@ -660,8 +623,6 @@ Index: b/spro/system.h
 +# endif
 +
 +#endif /* _system_h_ */
-Index: b/sptables.h
-===================================================================
 --- a/sptables.h
 +++ /dev/null
 @@ -1,81 +0,0 @@
@@ -746,8 +707,6 @@ Index: b/sptables.h
 -#ifdef __cplusplus
 -}
 -#endif
-Index: b/system.h
-===================================================================
 --- a/system.h
 +++ /dev/null
 @@ -1,107 +0,0 @@
