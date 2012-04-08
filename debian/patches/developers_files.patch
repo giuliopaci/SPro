@@ -1,0 +1,39 @@
+Description: add useful files for developers
+ Adds pkg-config file.
+Author: Giulio Paci <giuliopaci@gmail.com>
+Forwarded: no
+--- /dev/null
++++ b/spro.pc.in
+@@ -0,0 +1,15 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++datarootdir=@datarootdir@
++datadir=@datadir@
++pkgdatadir=${datarootdir}/spro
++
++Name: spro
++Description: Speech signal processing toolkit for feature extraction
++Version: @VERSION@
++Requires:
++Libs: -L${libdir} -lspro
++Cflags: -I${includedir}/spro/
++
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -76,3 +76,6 @@
+ 
+ SUBDIRS = doc auxdir test
+ EXTRA_DIST = README INSTALL COPYING CHANGES
++
++pkgconfigdir   = $(libdir)/pkgconfig
++pkgconfig_DATA = spro.pc
+--- a/configure.in
++++ b/configure.in
+@@ -108,4 +108,4 @@
+ AC_SUBST(sphere_lib)
+ 
+ dnl Files which should be output by the configure script
+-AC_OUTPUT(Makefile doc/Makefile auxdir/Makefile test/Makefile test/ref/Makefile test/dat/Makefile)
++AC_OUTPUT(Makefile doc/Makefile auxdir/Makefile test/Makefile test/ref/Makefile test/dat/Makefile spro.pc)
