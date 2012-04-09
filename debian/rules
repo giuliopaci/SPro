@@ -29,6 +29,8 @@ common-install-prehook-impl::
 
 binary-post-install/spro::
 	$(RM) debian/$(cdbs_curpkg)/usr/share/info/dir
+
+binary-post-install/libspro0-dev::
 	sed -e "s/^dependency_libs.*/dependency_libs=''\n#&/g" -i debian/$(cdbs_curpkg)/usr/lib/libspro.la
 
 clean::

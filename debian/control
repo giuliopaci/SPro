@@ -3,7 +3,9 @@ Section: misc
 Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
 Build-Depends: cdbs (>= 0.4.70~),
+ autotools-dev,
  devscripts,
+ libtool,
  automake1.11,
  autoconf,
  debhelper,
@@ -13,7 +15,10 @@ Homepage: http://spro.gforge.inria.fr/
 
 Package: spro
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, dpkg (>= 1.15.4) | install-info
+Depends: libspro0 (= ${binary:Version}),
+	 ${shlibs:Depends},
+	 ${misc:Depends},
+	 dpkg (>= 1.15.4) | install-info
 Description: Speech signal processing toolkit for feature extraction
  SPro is a free speech signal processing toolkit which provides runtime
  commands implementing standard feature extraction algorithms for speech
@@ -28,3 +33,72 @@ Description: Speech signal processing toolkit for feature extraction
  functions needed to build signal processing algorithms are defined in
  a library and runtime tools are provided for the standard analysis
  procedure (LPC, filter-bank and cepstral analysis).
+ .
+ This package provides the command line tools.
+
+Package: libspro0-dev
+Section: libdevel
+Architecture: any
+Depends: libspro0 (= ${binary:Version}),
+         ${misc:Depends}
+Description: SPro development files
+ SPro is a free speech signal processing toolkit which provides runtime
+ commands implementing standard feature extraction algorithms for speech
+ related applications and a C library to implement new algorithms and to
+ use SPro files within your own programs.
+ .
+ SPro was originally designed for variable resolution spectral analysis
+ but also provides for feature extraction techniques classically used in
+ speech applications.
+ .
+ SPro provides the standard speech signal analysis routines. The basic
+ functions needed to build signal processing algorithms are defined in
+ a library and runtime tools are provided for the standard analysis
+ procedure (LPC, filter-bank and cepstral analysis).
+ .
+ This package contains development files.
+
+Package: libspro0-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Depends: libspro0 (= ${binary:Version}),
+         ${misc:Depends}
+Description: SPro debug symbols
+ SPro is a free speech signal processing toolkit which provides runtime
+ commands implementing standard feature extraction algorithms for speech
+ related applications and a C library to implement new algorithms and to
+ use SPro files within your own programs.
+ .
+ SPro was originally designed for variable resolution spectral analysis
+ but also provides for feature extraction techniques classically used in
+ speech applications.
+ .
+ SPro provides the standard speech signal analysis routines. The basic
+ functions needed to build signal processing algorithms are defined in
+ a library and runtime tools are provided for the standard analysis
+ procedure (LPC, filter-bank and cepstral analysis).
+ .
+ This package contains debug symbols.
+
+Package: libspro0
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Description: SPro shared library
+ SPro is a free speech signal processing toolkit which provides runtime
+ commands implementing standard feature extraction algorithms for speech
+ related applications and a C library to implement new algorithms and to
+ use SPro files within your own programs.
+ .
+ SPro was originally designed for variable resolution spectral analysis
+ but also provides for feature extraction techniques classically used in
+ speech applications.
+ .
+ SPro provides the standard speech signal analysis routines. The basic
+ functions needed to build signal processing algorithms are defined in
+ a library and runtime tools are provided for the standard analysis
+ procedure (LPC, filter-bank and cepstral analysis).
+ .
+ This package contains the SPro shared library.
