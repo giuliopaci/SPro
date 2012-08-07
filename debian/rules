@@ -1,5 +1,9 @@
 #!/usr/bin/make -f
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND = -Wall
+include /usr/share/dpkg/buildflags.mk
+
 include /usr/share/cdbs/1/rules/upstream-tarball.mk
 include /usr/share/cdbs/1/rules/utils.mk
 include /usr/share/cdbs/1/class/autotools.mk
@@ -42,4 +46,4 @@ clean::
 	$(RM) doc/spro.pdf
 
 # Needed by upstream build process
-CDBS_BUILD_DEPENDS +=
+CDBS_BUILD_DEPENDS += , dpkg-dev (>= 1.16.1~) 
