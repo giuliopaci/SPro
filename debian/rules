@@ -12,7 +12,7 @@ DEB_AUTO_UPDATE_ACLOCAL = 1.11
 DEB_ACLOCAL_ARGS = -I auxdir
 DEB_AUTO_UPDATE_AUTOMAKE = 1.11
 DEB_AUTOMAKE_ARGS = --foreign --add-missing --copy
-DEB_AUTO_UPDATE_AUTOCONF = 2.68
+DEB_AUTO_UPDATE_AUTOCONF = 2.69
 
 BACKUP=configure aclocal.m4 auxdir/Makefile.in Makefile.in config.h.in doc/Makefile.in doc/spro.info doc/stamp-vti doc/version.texi test/Makefile.in test/dat/Makefile.in test/ref/Makefile.in
 
