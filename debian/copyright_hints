@@ -18,7 +18,9 @@ Files: CHANGES
  debian/doc-base
  debian/docs
  debian/gbp.conf
- debian/manpages
+ debian/libspro0-dev.install
+ debian/libspro0.install
+ debian/libspro0.symbols
  debian/manpages_files/scopy.1
  debian/manpages_files/sfbank.1
  debian/manpages_files/sfbcep.1
@@ -28,8 +30,13 @@ Files: CHANGES
  debian/patches/developers_files.patch
  debian/patches/documentation_fixes.patch
  debian/patches/series
+ debian/patches/shared_library.patch
  debian/rules
  debian/source/format
+ debian/source/local-options
+ debian/spro.info
+ debian/spro.install
+ debian/spro.manpages
  debian/watch
  doc/stamp-vti
  doc/version.texi
