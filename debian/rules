@@ -20,7 +20,7 @@ DEB_COPYRIGHT_CHECK_IGNORE_REGEX := ^debian/(changelog|copyright(|_hints|_newhin
 
 pre-build::
 	# Backup files expected to be modified.
-	for i in $(BACKUP); do \
+	set -e ; for i in $(BACKUP); do \
 		if [ ! -f "$$i".backup ]; then cp -a "$$i" "$$i".backup; fi ; \
 	done
 
@@ -34,7 +34,7 @@ binary-post-install/libspro0-dev::
 	sed -e "s/^dependency_libs.*/dependency_libs=''\n#&/g" -i debian/$(cdbs_curpkg)/usr/lib/libspro.la
 
 clean::
-	for i in $(BACKUP); do \
+	set -e ; for i in $(BACKUP); do \
 		if [ -f "$$i".backup ]; then mv -f "$$i".backup "$$i"; fi ; \
 	done
 	$(RM) auxdir/ltmain.sh auxdir/compile auxdir/config.sub auxdir/config.guess auxdir/libtool.m4 auxdir/ltoptions.m4 auxdir/ltsugar.m4 auxdir/ltversion.m4 auxdir/lt~obsolete.m4
