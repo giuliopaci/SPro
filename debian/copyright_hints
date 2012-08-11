@@ -11,14 +11,12 @@ Files: CHANGES
  auxdir/mkinstalldirs
  config.h.in
  debian/README.Debian
- debian/TODO
  debian/compat
  debian/control
  debian/control.in
  debian/doc-base
- debian/docs
  debian/gbp.conf
- debian/libspro0-dev.install
+ debian/libspro-dev.install
  debian/libspro0.install
  debian/libspro0.symbols
  debian/manpages_files/scopy.1
