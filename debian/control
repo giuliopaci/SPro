@@ -36,7 +36,7 @@ Description: Speech signal processing toolkit for feature extraction
  .
  This package provides the command line tools.
 
-Package: libspro0-dev
+Package: libspro-dev
 Section: libdevel
 Architecture: any
 Depends: libspro0 (= ${binary:Version}),
