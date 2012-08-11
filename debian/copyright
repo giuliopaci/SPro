@@ -1,4 +1,4 @@
-Format: http://www.debian.org/doc/copyright-format/1.0
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Contact: Guillaume Gravier <guillaume.gravier@irisa.fr>
 Upstream-Name: spro
 Source: http://spro.gforge.inria.fr/
