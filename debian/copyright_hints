@@ -25,10 +25,15 @@ Files: CHANGES
  debian/manpages_files/slpc.1
  debian/manpages_files/slpcep.1
  debian/manpages_files/splp.1
- debian/patches/developers_files.patch
- debian/patches/documentation_fixes.patch
+ debian/patches/1001_64bit_fixes.patch
+ debian/patches/1002_fix_sfbcep_options.patch
+ debian/patches/1004_scale_input_to_16bit.patch
+ debian/patches/1005_open_files_in_binary_mode_on_windows.patch
+ debian/patches/1006_fix_spellings.patch
+ debian/patches/1007_documentation_fixes.patch
+ debian/patches/1008_developers_files.patch
+ debian/patches/1009_shared_library.patch
  debian/patches/series
- debian/patches/shared_library.patch
  debian/rules
  debian/source/format
  debian/source/local-options
@@ -39,7 +44,8 @@ Files: CHANGES
  doc/stamp-vti
  doc/version.texi
  gggetopt.h
- sptables.h
+ spro.pc.in
+ spro/sptables.h
  test/bank.sh
  test/copy.sh
  test/fbcep.sh
@@ -52,7 +58,7 @@ License: UNKNOWN
 
 Files: Makefile.am
  convert.c
- debian/patches/compilation_and_behaviour_fixes.patch
+ debian/patches/1003_move_private_headers_into_a_private_directory.patch
  doc/intro.texi
  fft.c
  header.c
@@ -68,7 +74,7 @@ Files: Makefile.am
  spf.c
  splp.c
  spro.h
- system.h
+ spro/system.h
 Copyright: 1997-2010, Guillaume Gravier (guig@irisa.fr)
   2003, Guillaume Gravier (guig@irisa.fr)
   HOLDERS
