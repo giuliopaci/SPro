@@ -337,26 +337,6 @@ Forwarded: no
  
  bin_PROGRAMS = scopy slpc slpcep sfbank sfbcep splp
  noinst_PROGRAMS = scompare
---- a/sfbcep.c
-+++ b/sfbcep.c
-@@ -33,7 +33,7 @@
-    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
--*/
-+ */
- 
- /*
-  * Convert speech input file to cepstral coefficients output feature file.
-@@ -526,7 +526,7 @@
-     {"freq-min", required_argument, NULL, 'i'},
-     {"freq-max", required_argument, NULL, 'u'},
-     {"fft-length", required_argument, NULL, 'b'},
--    {"num-cep", required_argument, NULL, 'p'},
-+    {"num-ceps", required_argument, NULL, 'p'},
-     {"lifter", required_argument, NULL, 'r'},
-     {"energy", no_argument, NULL, 'e'},
-     {"scale-energy", required_argument, NULL, 's'},
 --- a/spro.h
 +++ b/spro.h
 @@ -33,7 +33,7 @@
