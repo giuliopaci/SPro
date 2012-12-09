@@ -1,5 +1,5 @@
 Source: spro
-Section: misc
+Section: sound
 Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
 Build-Depends: @cdbs@
