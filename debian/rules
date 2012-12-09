@@ -4,6 +4,8 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 export DEB_CFLAGS_MAINT_APPEND = -Wall
 include /usr/share/dpkg/buildflags.mk
 
+DEB_MAKE_CHECK_TARGET := check
+
 DEB_INSTALL_CHANGELOGS_ALL := CHANGES
 DEB_INSTALL_DOCS_spro := README doc/spro.pdf
 
