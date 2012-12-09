@@ -6,6 +6,7 @@ include /usr/share/dpkg/buildflags.mk
 
 DEB_MAKE_CHECK_TARGET := check
 DEB_BUILD_PARALLEL := 1
+DEB_DH_MAKESHLIBS_ARGS_ALL := -V -- -t
 
 DEB_INSTALL_CHANGELOGS_ALL := CHANGES
 DEB_INSTALL_DOCS_spro := README doc/spro.pdf
