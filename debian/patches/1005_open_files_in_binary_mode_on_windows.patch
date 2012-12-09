@@ -1,0 +1,43 @@
+Description: open files in binary mode on Windows.
+Author: Giulio Paci <giuliopaci@gmail.com>
+Forwarded: no
+--- a/scopy.c
++++ b/scopy.c
+@@ -540,7 +540,7 @@
+   FILE *f;
+ 
+   if (strcmp(ofn, "-")) {
+-    if ((f = fopen(ofn, "w")) == NULL)
++    if ((f = fopen(ofn, "wb")) == NULL)
+       return(NULL);
+   }
+   else
+@@ -999,7 +999,7 @@
+   FILE *f;
+   void free_trans_mat(transmat_t *);
+ 
+-  if ((f = fopen(fn, "r")) == NULL) {
++  if ((f = fopen(fn, "rb")) == NULL) {
+     fprintf(stderr, "scopy error -- cannot open transformation file %s\n", fn);
+     return(NULL);
+   }
+--- a/spf.c
++++ b/spf.c
+@@ -357,7 +357,7 @@
+       spf_stream_close(s);
+       return(NULL);
+     }
+-    if ((s->f = fopen(fn, "r")) == NULL) {
++    if ((s->f = fopen(fn, "rb")) == NULL) {
+       fprintf(stderr, "spf_input_stream_open(): cannot open input file %s\n", fn);
+       spf_stream_close(s);
+       return(NULL);
+@@ -483,7 +483,7 @@
+       spf_stream_close(s);
+       return(NULL);
+     }
+-    if ((s->f = fopen(fn, "w")) == NULL) {
++    if ((s->f = fopen(fn, "wb")) == NULL) {
+       fprintf(stderr, "spf_output_stream_open(): cannot open input file %s\n", fn);
+       spf_stream_close(s);
+       return(NULL);
