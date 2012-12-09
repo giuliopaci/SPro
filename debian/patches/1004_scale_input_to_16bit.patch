@@ -1,0 +1,40 @@
+Description: scales input signal range to 16bit when reading audio files.
+Author: Giulio Paci <giuliopaci@gmail.com>
+Forwarded: no
+--- a/sig.c
++++ b/sig.c
+@@ -33,7 +33,7 @@
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+-*/
++ */
+ 
+ /*
+  * Signal I/O routines.
+@@ -778,7 +778,7 @@
+ /* ----- double getsample(void *, unsigned long, unsigned short) ----- */
+ /* ------------------------------------------------------------------- */
+ /*
+- * Return n'th sample value assuming m bytes samples.
++ * Return n'th sample value assuming m bytes samples. The sample will be rescaled to PCM Signed 16bit range.
+  */
+ double getsample(void *p, unsigned long n, unsigned short m)
+ {
+@@ -787,12 +787,16 @@
+   switch(m) {
+   case 1:
+     v = (double)(*((char *)p+n));
++    v /= 255.0;
++    v *= 32677.0;
+     break;
+   case 2:
+     v = (double)*((short *)p+n);
+     break;
+   case 4:
+     v = (double)*((long *)p+n);
++    v /= 2147483647.0;
++    v *= 32677.0;
+   default:
+     v = 0.0;
+   }
