@@ -1,11 +1,6 @@
-Description: Compilation and behaviour fixes.
- The patch fix several compilation issues (expecially for Windows).
- The SPro behaviour is modified so that the files generated on a 32bit
- or a 64bit little-endian architectures are compatible. The reading
- behaviour of 8bit PCM and 32bit PCM files is also changed so that
- features evaluated on those files can be compared with features
- evaluated on 16bit PCM files (8bit and 32bit files are scaled before
- features estimation).
+Description: behaviour fixes on 64bit systems.
+ This patch modifies SPro behaviour so that the files generated on a 32bit
+ or a 64bit little-endian architectures are compatible.
 Author: Giulio Paci <giuliopaci@gmail.com>
 Forwarded: no
 --- a/fft.c
