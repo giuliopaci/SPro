@@ -1,5 +1,9 @@
-compilation_and_behaviour_fixes.patch
-
-documentation_fixes.patch
-developers_files.patch
-shared_library.patch
+1001_64bit_fixes.patch
+1002_fix_sfbcep_options.patch
+1003_move_private_headers_into_a_private_directory.patch
+1004_scale_input_to_16bit.patch
+1005_open_files_in_binary_mode_on_windows.patch
+1006_fix_spellings.patch
+1007_documentation_fixes.patch
+1008_developers_files.patch
+1009_shared_library.patch
