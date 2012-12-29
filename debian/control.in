@@ -3,7 +3,7 @@ Section: sound
 Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
 Build-Depends: @cdbs@
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 Homepage: http://spro.gforge.inria.fr/
 
 Package: spro
