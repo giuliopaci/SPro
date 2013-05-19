@@ -2,7 +2,7 @@ Source: spro
 Section: sound
 Priority: optional
 Maintainer: Giulio Paci <giuliopaci@gmail.com>
-Build-Depends: cdbs (>= 0.4.85~),
+Build-Depends: cdbs,
  debhelper (>= 9~),
  dh-buildinfo,
  devscripts,
