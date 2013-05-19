@@ -78,7 +78,20 @@ Files: Makefile.am
 Copyright: 1997-2010, Guillaume Gravier (guig@irisa.fr)
   2003, Guillaume Gravier (guig@irisa.fr)
   HOLDERS
-License: MIT/X11 (BSD like)
+License: Expat
+ FIXME
+
+Files: debian/patches/0001_r154.patch
+ debian/patches/0002_r156.patch
+ doc/changes.texi
+ doc/index.texi
+ doc/library.texi
+ doc/reference.texi
+ doc/speech.texi
+ doc/user.texi
+Copyright: 1997-2010, Guillaume Gravier (guig@irisa.fr)
+  2003, Guillaume Gravier (guig@irisa.fr)
+License: UNKNOWN
  FIXME
 
 Files: Makefile.in
@@ -91,16 +104,6 @@ Copyright: 1994-2002
 License: UNKNOWN
  FIXME
 
-Files: doc/changes.texi
- doc/index.texi
- doc/library.texi
- doc/reference.texi
- doc/speech.texi
- doc/user.texi
-Copyright: 2003, Guillaume Gravier (guig@irisa.fr)
-License: UNKNOWN
- FIXME
-
 Files: configure.in
  doc/Makefile.am
  test/Makefile.am
@@ -109,6 +112,14 @@ Files: configure.in
 Copyright: 2002, Guillaume Gravier (ggravier@irisa.fr) ##
   2002-2010, Guillaume Gravier (ggravier@irisa.fr) ##
 License: GPL-2+
+ FIXME
+
+Files: doc/spro.info
+ gggetopt.c
+Copyright: 1996, - 2010, Guillaume Gravier
+  2010, Guillaume Gravier
+  HOLDERS
+License: Expat
  FIXME
 
 Files: auxdir/texinfo.tex
@@ -125,22 +136,14 @@ Copyright: 1996-1997, Free Software Foundation, Inc
 License: GPL-2+
  FIXME
 
-Files: doc/spro.info
- gggetopt.c
-Copyright: 1996, - 2010, Guillaume Gravier
-  2010, Guillaume Gravier
-  HOLDERS
-License: MIT/X11 (BSD like)
+Files: COPYING
+Copyright: HOLDERS BE
+License: Expat
  FIXME
 
 Files: auxdir/mdate-sh
 Copyright: 1995-1997, 2003-2005, Free Software
 License: GPL-2+
- FIXME
-
-Files: COPYING
-Copyright: HOLDERS BE
-License: MIT/X11 (BSD like)
  FIXME
 
 Files: aclocal.m4
