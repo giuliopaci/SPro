@@ -46,7 +46,6 @@ clean::
 		if [ -f "$$i".backup ]; then mv -f "$$i".backup "$$i"; fi ; \
 	done
 	$(RM) auxdir/ltmain.sh auxdir/compile auxdir/config.sub auxdir/config.guess auxdir/libtool.m4 auxdir/ltoptions.m4 auxdir/ltsugar.m4 auxdir/ltversion.m4 auxdir/lt~obsolete.m4
-
 	$(RM) doc/spro.pdf
 
 # Needed by upstream build process
